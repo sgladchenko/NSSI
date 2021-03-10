@@ -2,6 +2,7 @@
 
 #include "Types.h"
 #include "su4.h"
+#include <iostream>
 
 // The objects of this class are basically to contain
 // the lines of a solution being calculated; that's much easier to work with such
@@ -17,44 +18,16 @@ class TwoLines
         // The default constructor
         TwoLines()  : vleft {}, vright {}, vdim {} {}
         // The constructor which just allocate the memory
-        TwoLines(int adim) : vleft {adim}, vright {adim}, vdim {adim} {}
+        TwoLines(int adim);
         // Constructor that gains the initial data
-        TwoLines(std::vector<Matrix> aleft, std::vector<Matrix> aright, int adim)
-                    : vleft  {std::move(aleft)},
-                      vright {std::move(aright)},
-                      vdim   {adim} {}
+        TwoLines(const std::vector<Matrix>& aleft, const std::vector<Matrix>& aright, int adim);
         // Copy constructor
-        TwoLines(const TwoLines& twoLines) 
-                    : vleft  {twoLines.vleft},
-                      vright {twoLines.vright},
-                      vdim   {twoLines.vdim} {}
-        // Move constructor
-        TwoLines(TwoLines&& twoLines)
-                    : vleft  {std::move(twoLines.vleft)},
-                      vright {std::move(twoLines.vright)},
-                      vdim   {twoLines.vdim} {}
+        TwoLines(const TwoLines& twoLines);
         
         // A way to re-initialise data in the container
-        void init(std::vector<Matrix> aleft, std::vector<Matrix> aright, int adim)
-        {
-            vleft  = std::move(aleft);
-            vright = std::move(aright);
-            vdim   = adim;
-        }
+        TwoLines& init(const std::vector<Matrix>& aleft, const std::vector<Matrix>& aright, int adim);
         // Copy assignment operator
-        TwoLines(const TwoLines& twoLines)
-        {
-            vleft  = twoLines.vleft;
-            vright = twoLines.vright;
-            vdim   = twoLines.vdim;
-        }
-        // Move assignment operator
-        TwoLines(TwoLines&& twoLines)
-        {
-            vleft  = std::move(twoLines.vleft);
-            vright = std::move(twoLines.vright);
-            vdim   = twoLines.vdim;
-        }
+        TwoLines& operator=(const TwoLines& twoLines);
 
         // Basic arithmetic operations
         TwoLines operator+(const TwoLines& twoLines) const;
@@ -65,6 +38,8 @@ class TwoLines
         // Access/edit methods; each of them has cycled index i
         const Matrix& left(int i) const;
         const Matrix& right(int i) const;
+        // Acces to the size
+        int dim() const {return vdim;}
 
         // Finite differences for derivatives
         TwoLines derivative2ndOrder(Real step) const;
@@ -76,8 +51,8 @@ class TwoLines
 
         // Some specific ones; this does elementwise normalisation
         // of the matrices, required in the scheme
-        void su4Normalise(std::vector<Complex> normsLeft, std::vector<Complex> normsRight);
-    
+        void su4Normalise(std::vector<Real> normsLeft, std::vector<Real> normsRight);
+
         // Some special directive needed for the enabling additional acceleration
         // through the vectorized operations
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -106,3 +81,6 @@ T difference4thOrder(const T& nnext, const T& next, const T& prev, const T& ppre
 {
     return -nnext/12.0 + 2.0*next/3.0 - 2.0*prev/3.0 + pprev/12.0;
 }
+
+// STL-like output
+std::ostream& operator<<(std::ostream& os, const TwoLines& tl);

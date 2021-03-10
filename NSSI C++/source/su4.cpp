@@ -31,6 +31,18 @@ Matrix su4::Compose(const su4::Vector& v)
     return res + 0.25*Matrix::Identity();
 }
 
+// Similar as above, but doesn't add an additional 0.25*Id
+Matrix ComposeTraceless(const su4::Vector& v)
+{
+    Matrix res;
+    res = Matrix::Zero();
+    for (int k = 0; k < 15; ++k)
+    {   
+        res += v[k]*su4::Basis[k];
+    }
+    return res;
+}
+
 // This operations provides a way to regularise the matrix and put it on
 // the su(4) Lie algebra
 Matrix su4::Normalise(const Matrix& m, Real initialNorm)

@@ -73,7 +73,7 @@ class Constants
 
         // "Profile"
         bool ProfileFlag;
-        Real z_0;
+        Real R;
 
         // "Old-fashioned noise"
         bool OldNoiseFlag;

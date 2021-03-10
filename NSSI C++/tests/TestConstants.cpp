@@ -1,5 +1,9 @@
 #include "Constants.h"
 
+/*
+	TESTED: 9th March. Seems everything's OK
+*/
+
 #include <iostream>
 
 namespace ph = physicalConstants;
@@ -37,14 +41,14 @@ void BaseConstants(Constants& c)
 	std::cout << "\t MagenticEps = " << c.MagneticEps << std::endl;
 
 	std::cout << "> Scheme parameters:" << std::endl;
-	std::cout << "\t N_x = "                << c.N_x << std::endl
-			  << "\t N_z  = "               << c.N_z  << std::endl
+	std::cout << "\t N_x = "                << c.N_x                << std::endl
+			  << "\t N_z  = "               << c.N_z                << std::endl
 			  << "\t X   = "                << c.X/ph::km << " km"  << std::endl
 			  << "\t Z   = "                << c.Z/ph::km << " km"  << std::endl
 			  << "\t su4NormalisePeriod = " << c.su4NormalisePeriod << std::endl
-			  << "\t su4NormaliseFlag = "   << c.su4NormalisePeriod << std::endl
-			  << "\t PressFlag = "          << c.PressFlag << std::endl
-			  << "\t xDerivativeOrder = "   << c.xDerivativeOrder << std::endl;
+			  << "\t su4NormaliseFlag = "   << c.su4NormaliseFlag   << std::endl
+			  << "\t PressFlag = "          << c.PressFlag          << std::endl
+			  << "\t xDerivativeOrder = "   << c.xDerivativeOrder   << std::endl;
 
 	std::cout << "> Profile:" << std::endl;
 	std::cout << "\t z_0   = "       << c.z_0/ph::km << " km"  << std::endl
@@ -77,14 +81,32 @@ void BaseConstants(Constants& c)
 // Same but fot the derived ones
 void DerivedConstants(Constants& c)
 {
-    
+    std::cout << "> Derived constants, angles:"    << std::endl;
+    std::cout << "\t cosOmega = " << c.cosOmega  << std::endl
+              << "\t cosChi = "   << c.cosChi    << std::endl
+              << "\t tanChi = "   << c.tanChi    << std::endl
+              << "\t s2theta = "  << c.s2theta   << std::endl
+              << "\t c2theta = "  << c.c2theta   << std::endl;
+
+    std::cout << "> Scheme steps:" << std::endl;
+    std::cout << "\t dz = " << c.dz / ph::km << " km" << std::endl
+              << "\t dx = " << c.dx / ph::km << " km" << std::endl;
+
+	std::cout << "> Matrices and norms:" << std::endl;
+	std::cout << "\t MeanLeft = "  << std::endl
+			  << c.MeanLeft        << std::endl;
+	std::cout << "\t MeanRight = " << std::endl
+			  << c.MeanRight       << std::endl;
+	std::cout << "\t NormLeft = "  << c.NormMeanLeft << std::endl
+			  << "\t NormRight = " << c.NormMeanRight << std::endl;
 }
 
 int main()
 {
     Constants c;
-    c.gather("./Parameters.json");
+    c.gather("./Parameters copy.json");
     BaseConstants(c);
+    DerivedConstants(c);
 
     return 0;
 }

@@ -1,4 +1,46 @@
+#include <omp.h>
+
 #include "Containers.h"
+
+// Allocate memory and set all the entries to zeros
+TwoLines::TwoLines(int adim) : vleft(adim, Matrix::Zero()),
+                               vright(adim, Matrix::Zero()),
+                               vdim(adim)
+{}
+
+// Constructor taking parameters of the container
+TwoLines::TwoLines(const std::vector<Matrix>& aleft, const std::vector<Matrix>& aright, int adim)
+         : vleft(aleft), vright(aright), vdim(adim) {}
+
+// Copy constructor
+TwoLines::TwoLines(const TwoLines& twoLines) 
+         : vleft(twoLines.vleft), vright(twoLines.vright), vdim(twoLines.vdim) {}
+
+// A way to re-initialise data in the container
+TwoLines& TwoLines::TwoLines::init(const std::vector<Matrix>& aleft, const std::vector<Matrix>& aright, int adim)
+{
+    // Let's first free the memory
+    vleft.clear();
+    vright.clear();
+    // Then, let's make a copy assignments for the vectors
+    vleft  = aleft;
+    vright = aright;
+    vdim   = adim;
+    return *this;
+}
+
+// Copy assignment operator
+TwoLines& TwoLines::operator=(const TwoLines& twoLines)
+{
+    // Let's first free the memory
+    vleft.clear();
+    vright.clear();
+    // Then, let's make a copy assignments for the vectors
+    vleft  = twoLines.vleft;
+    vright = twoLines.vright;
+    vdim   = twoLines.vdim;
+    return *this;
+}
 
 // Elementwise summation of the density matrices
 TwoLines TwoLines::operator+(const TwoLines& twoLines) const
@@ -57,18 +99,19 @@ TwoLines operator*(Complex z, const TwoLines& twoLines)
 // Access a matrix of the left beam
 const Matrix& TwoLines::left(int i) const
 {
-    return vleft[i % vdim];
+    return vleft[( (i % vdim) + vdim) % vdim];
 }
 
 // Access a matrix of the right beam
 const Matrix& TwoLines::right(int i) const
 {
-    return vright[i % vdim];
+    return vright[( (i % vdim) + vdim) % vdim];
 }
 
 TwoLines TwoLines::derivative2ndOrder(Real step) const
 {
     TwoLines tmp(vdim);
+    #pragma omp parallel for
     for (int i = 0; i < vdim; ++i)
     {
         tmp.vleft[i]  = difference2ndOrder(this->left(i+1),  this->left(i-1)) / step;
@@ -119,11 +162,27 @@ TwoLines com(const TwoLines& twoLines1, const TwoLines& twoLines2)
 }
 
 // Elementwise su4Normalise
-void TwoLines::su4Normalise(std::vector<Complex> normsLeft, std::vector<Complex> normsRight)
+void TwoLines::su4Normalise(std::vector<Real> normsLeft, std::vector<Real> normsRight)
 {
     for (int i = 0; i < vdim; ++i)
     {
         vleft[i]  = su4::Normalise(vleft[i],  normsLeft[i]);
         vright[i] = su4::Normalise(vright[i], normsRight[i]);
     }
+}
+
+// STL-like output
+std::ostream& operator<<(std::ostream& os, const TwoLines& tl)
+{
+    // Output the left line
+    for (int i=0; i < tl.dim(); ++i)
+    {
+        os << "left[" << i << "]: " << std::endl << tl.left(i) << std::endl;
+    }
+    // Output the right line
+    for (int i=0; i < tl.dim(); ++i)
+    {
+        os << "right[" << i << "]: " << std::endl << tl.right(i) << std::endl;
+    }
+    return os;
 }

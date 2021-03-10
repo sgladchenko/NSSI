@@ -10,22 +10,26 @@
 // The function that initializes the TwoLines of the initial density matrices
 TwoLines InitialConditions(const Constants& c, const Noise& n);
 
-// Functions with particular formulae of the matrix flavour Hamiltonians
-Matrix VacuumHamiltonian(const Constants& c);
-Matrix MSWHamiltonian(const Constants& c, Real z);
-Matrix AMMHamiltonian(const Constants& c, Real z);
-
-// and the collective ones
-Matrix VAHamiltonian(const Constants& c, const Matrix& rhoOpp, Real z);
-Matrix NSSIHamiltonian(const Constants& c, const Matrix& rhoOpp, Real z);
-
 // The functions that generate the total Hamilatonians in a TwoLines instance
 TwoLines Hamiltonians(const Constants& c, const TwoLines& rho, Real z);
 
-// Some smaller functions needed
-Real originLeft(Real x, Real z);
-Real originRight(Real x, Real z);
+// Function that evaluates the norms of the initial conditions
+void InitialNorms(const TwoLines& rho,
+                  std::vector<Real>& leftNorms,
+                  std::vector<Real>& rightNorms);
 
-// Function that evaluates the norms (and saves them in the vector put in the arguements
-// by references)
-void Norms(const TwoLines& rho, std::vector<Real>& leftNorms, std::vector<Real>& rightNorms);
+// Function that approximately calculates the norms at a given position z
+// (approximaely means that it uses linear interpolation of the initial norms
+// in order to figure the norms between the nodes of the grid)
+void ApproximateNorms(const std::vector<Real>& initLeftNorms,
+                      const std::vector<Real>& initRightNorms,
+                      std::vector<Real>& leftNorms,
+                      std::vector<Real>& rightNorms,
+                      Real z);
+
+// Same as above, but it actually calculates them directly
+void TrueNorms(const Constants& c,
+               const Noise& n,
+               std::vector<Real>& leftNorms,
+               std::vector<Real>& rightNorms,
+               Real z);

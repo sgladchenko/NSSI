@@ -109,7 +109,7 @@ void Constants::gather(String filename)
 	// Profile
 
 	ProfileFlag   = getEntry<bool>(j, "Profile", "toggle");
-	z_0           = getDouble(j,      "Profile", "z_0", units);
+	R             = getDouble(j,      "Profile", "R", units);
 
 	// Old Fashioned way of perturbing the lumonsity
 

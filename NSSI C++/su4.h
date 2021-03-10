@@ -33,13 +33,7 @@ namespace su4
 			Vector operator/(Real z) const;
 
 			Vector& operator+=(const Vector& vec);
-
-			// Some output
-			void output()
-			{
-				for (auto it = arr.begin(); it != arr.end(); ++it) std::cout << *it << " ";
-				std::cout << std::endl;
-			}
+			
 		private:
 			Array15 arr;
 	};
@@ -47,6 +41,7 @@ namespace su4
 	// The operations that I'm going to use in all the parts of my code
 	Vector Decompose(const Matrix& m);
 	Matrix Compose(const Vector& v);
+	Matrix ComposeTraceless(const Vector& v);
 	Matrix Normalise(const Matrix& m, Real initialNorm);
 	Real   Norm(const Matrix& m);
 
@@ -163,11 +158,19 @@ namespace su4
 											      0.0,  0.0, 1.0,  0.0,
 											      0.0,  0.0, 0.0, -1.0};
 
+	inline const Complex G_arr[16] = {1.0,  0.0,  0.0,  0.0,
+									  0.0,  1.0,  0.0,  0.0,
+									  0.0,  0.0, -1.0,  0.0,
+									  0.0,  0.0,  0.0, -1.0};
+
 	// And the Matrix instances
 	inline const Matrix AMMLike(AMMLike_arr);
 	inline const Matrix flavourSigma1(flavourSigma1_arr);
 	inline const Matrix flavourSigma3(flavourSigma3_arr);
+	inline const Matrix G(G_arr);
 }
 
 // A multiplication of a vector on a Complex, but the vector is on the RHS
 su4::Vector operator*(Real z, const su4::Vector& vec);
+// An output in the STL-style
+std::ostream& operator<<(std::ostream& os, const su4::Vector& vec);
