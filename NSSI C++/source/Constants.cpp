@@ -42,7 +42,7 @@ std::vector<Real> getList(json& j, String section, String key)
 }
 
 // Initialise the map of the units
-Constants::Constants()
+Constants::Constants(String filename)
     : units { {"deg",   ph::deg},
               {"eV",    ph::eV},
               {"eV^2",  ph::eV*ph::eV},
@@ -51,10 +51,6 @@ Constants::Constants()
               {"km",    ph::km},
               {"G",     ph::G},
               {"muB",   ph::muB} }
-{}
-
-// Firstly we need to initialise the parameters
-void Constants::gather(String filename)
 {
     // Firstly, let's save the file into a buffer string
     std::ifstream jsonParameters(filename);

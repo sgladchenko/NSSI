@@ -4,6 +4,22 @@
 #include "su4.h"
 #include <iostream>
 
+// A structure useful to contain and interchange pairs of
+// the std::vector's containing the norms
+struct TwoNorms
+{
+    std::vector<Real> lNorms;
+    std::vector<Real> rNorms;
+    TwoNorms()
+            : lNorms(), rNorms() {}
+    TwoNorms(int n)
+            : lNorms(n, 0.0), rNorms(n, 0.0) {}
+    TwoNorms(int n, Real l, Real r)
+            : lNorms(n, l), rNorms(n, r) {}
+    TwoNorms(const TwoNorms& tn)
+            : lNorms(tn.lNorms), rNorms(tn.rNorms) {}
+};
+
 // The objects of this class are basically to contain
 // the lines of a solution being calculated; that's much easier to work with such
 // objects instead of direct usage of vector<T>'s, because here I aim to implement
@@ -19,6 +35,8 @@ class TwoLines
         TwoLines()  : vleft {}, vright {}, vdim {} {}
         // The constructor which just allocate the memory
         TwoLines(int adim);
+        // Initialises with adim copies of el
+        TwoLines(int adim, Matrix el);
         // Constructor that gains the initial data
         TwoLines(const std::vector<Matrix>& aleft, const std::vector<Matrix>& aright, int adim);
         // Copy constructor
@@ -35,9 +53,14 @@ class TwoLines
         TwoLines operator*(Complex z) const;
         TwoLines operator/(Complex z) const;
 
-        // Access/edit methods; each of them has cycled index i
+        // Access methods; each of them has cycled index i
         const Matrix& left(int i) const;
         const Matrix& right(int i) const;
+
+        // Edit methods; each of them has cycled index i
+        Matrix& setleft(int i);
+        Matrix& setright(int i);
+
         // Acces to the size
         int dim() const {return vdim;}
 
@@ -51,7 +74,7 @@ class TwoLines
 
         // Some specific ones; this does elementwise normalisation
         // of the matrices, required in the scheme
-        void su4Normalise(std::vector<Real> normsLeft, std::vector<Real> normsRight);
+        void su4Normalise(const TwoNorms& norms);
 
         // Some special directive needed for the enabling additional acceleration
         // through the vectorized operations

@@ -41,11 +41,8 @@ class Constants
         // The dafualt constructor; actually this is nontrivial. It initialises the inner
         // map of the physical units (this correspondance between the label and
         // final values in CGS is quite needed in the parser)
-        Constants();
-
-        // A method which just takes the JSON filenames
-        // and gathers all the data from a file
-        void gather(String filename);
+        // Added: gathering the data from JSON right here
+        Constants(String filename);
 
         // Similarly, but vice versa; just dump the initial text file
         void dump(String filename);

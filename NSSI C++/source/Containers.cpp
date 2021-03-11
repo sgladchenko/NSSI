@@ -2,11 +2,13 @@
 
 #include "Containers.h"
 
-// Allocate memory and set all the entries to zeros
-TwoLines::TwoLines(int adim) : vleft(adim, Matrix::Zero()),
-                               vright(adim, Matrix::Zero()),
-                               vdim(adim)
-{}
+// Allocate memory
+TwoLines::TwoLines(int adim)
+         : vleft(adim, Matrix::Zero()), vright(adim, Matrix::Zero()), vdim(adim) {}
+
+// Allocate memory, initialise with copies of el
+TwoLines::TwoLines(int adim, Matrix el)
+         : vleft(adim, el), vright(adim, el), vdim(adim) {}
 
 // Constructor taking parameters of the container
 TwoLines::TwoLines(const std::vector<Matrix>& aleft, const std::vector<Matrix>& aright, int adim)
@@ -17,7 +19,7 @@ TwoLines::TwoLines(const TwoLines& twoLines)
          : vleft(twoLines.vleft), vright(twoLines.vright), vdim(twoLines.vdim) {}
 
 // A way to re-initialise data in the container
-TwoLines& TwoLines::TwoLines::init(const std::vector<Matrix>& aleft, const std::vector<Matrix>& aright, int adim)
+TwoLines& TwoLines::init(const std::vector<Matrix>& aleft, const std::vector<Matrix>& aright, int adim)
 {
     // Let's first free the memory
     vleft.clear();
@@ -46,6 +48,7 @@ TwoLines& TwoLines::operator=(const TwoLines& twoLines)
 TwoLines TwoLines::operator+(const TwoLines& twoLines) const
 {
     TwoLines tmp(vleft, vright, vdim);
+    #pragma omp parallel for
     for (int i = 0; i < vdim; ++i)
     {
         tmp.vleft[i]  += twoLines.vleft[i];
@@ -58,6 +61,7 @@ TwoLines TwoLines::operator+(const TwoLines& twoLines) const
 TwoLines TwoLines::operator-(const TwoLines& twoLines) const
 {
     TwoLines tmp(vleft, vright, vdim);
+    #pragma omp parallel for
     for (int i = 0; i < vdim; ++i)
     {
         tmp.vleft[i]  -= twoLines.vleft[i];
@@ -70,6 +74,7 @@ TwoLines TwoLines::operator-(const TwoLines& twoLines) const
 TwoLines TwoLines::operator*(Complex z) const
 {
     TwoLines tmp(vleft, vright, vdim);
+    #pragma omp parallel for
     for (int i = 0; i < vdim; ++i)
     {
         tmp.vleft[i]  *= z;
@@ -82,6 +87,7 @@ TwoLines TwoLines::operator*(Complex z) const
 TwoLines TwoLines::operator/(Complex z) const
 {
     TwoLines tmp(vleft, vright, vdim);
+    #pragma omp parallel for
     for (int i = 0; i < vdim; ++i)
     {
         tmp.vleft[i]  /= z;
@@ -108,6 +114,17 @@ const Matrix& TwoLines::right(int i) const
     return vright[( (i % vdim) + vdim) % vdim];
 }
 
+// Edit an element in the left beam
+Matrix& TwoLines::setleft(int i)
+{
+    return vleft[( (i % vdim) + vdim) % vdim];
+}
+// Edit an element in the right beam
+Matrix& TwoLines::setright(int i)
+{
+    return vright[( (i % vdim) + vdim) % vdim];
+}
+
 TwoLines TwoLines::derivative2ndOrder(Real step) const
 {
     TwoLines tmp(vdim);
@@ -123,6 +140,7 @@ TwoLines TwoLines::derivative2ndOrder(Real step) const
 TwoLines TwoLines::derivative4thOrder(Real step) const
 {
     TwoLines tmp(vdim);
+    #pragma omp parallel for
     for (int i = 0; i < vdim; ++i)
     {
         tmp.vleft[i]  = difference4thOrder(this->left(i+2),  this->left(i+1),  this->left(i-1),  this->left(i-2)) / step;
@@ -147,6 +165,7 @@ TwoLines TwoLines::derivative(Real step, int order) const
 TwoLines dot(const TwoLines& twoLines1, const TwoLines& twoLines2)
 {
     TwoLines tmp(twoLines1.vdim);
+    #pragma omp parallel for
     for (int i = 0; i < twoLines1.vdim; ++i)
     {
         tmp.vleft[i]  = twoLines1.left(i)  * twoLines2.left(i);
@@ -162,12 +181,13 @@ TwoLines com(const TwoLines& twoLines1, const TwoLines& twoLines2)
 }
 
 // Elementwise su4Normalise
-void TwoLines::su4Normalise(std::vector<Real> normsLeft, std::vector<Real> normsRight)
+void TwoLines::su4Normalise(const TwoNorms& norms)
 {
+    #pragma omp parallel for
     for (int i = 0; i < vdim; ++i)
     {
-        vleft[i]  = su4::Normalise(vleft[i],  normsLeft[i]);
-        vright[i] = su4::Normalise(vright[i], normsRight[i]);
+        vleft[i]  = su4::Normalise(vleft[i],  norms.lNorms[i]);
+        vright[i] = su4::Normalise(vright[i], norms.rNorms[i]);
     }
 }
 

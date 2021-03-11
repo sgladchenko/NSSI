@@ -19,8 +19,8 @@ class Noise
         // The text in the JSON file
         String noiseText;
 
-        // Dummy constructor
-        Noise();
+        // Added: gathering the data from JSON right here
+        Noise(String filename);
         // Method that particularly gathers the data from JSON
         void gather(String filename);
         // And finally dump the initial JSON file into the final one

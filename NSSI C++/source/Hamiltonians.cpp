@@ -1,6 +1,7 @@
 #include "Hamiltonians.h"
 
 namespace ph = physicalConstants;
+namespace hs = hamiltonians;
 
 // Profiles, when they're needed
 inline Real profileNu(Real z, Real R)
@@ -17,13 +18,13 @@ inline Real profileAMM(Real z, Real R)
 }
 
 // Functions with particular formulae of the matrix flavour Hamiltonians
-Matrix VacuumHamiltonian(const Constants& c)
+Matrix hs::VacuumHamiltonian(const Constants& c)
 {
     return (c.dm2/(4.0*c.E_0*ph::hbarc)) * (c.s2theta*su4::flavourSigma1 - c.c2theta*su4::flavourSigma3);
 }
 
 // MSW part of the flavour effective Hamiltonian
-Matrix MSWHamiltonian(const Constants& c, Real z)
+Matrix hs::MSWHamiltonian(const Constants& c, Real z)
 {
     Matrix tmp = su4::MakeDiagonal(c.V_e-0.5*c.V_n, -0.5*c.V_n, -c.V_e+0.5*c.V_n, 0.5*c.V_n);
     if (c.ProfileFlag)
@@ -37,7 +38,7 @@ Matrix MSWHamiltonian(const Constants& c, Real z)
 }
 
 // AMM (interaction with magnetic field) part of the flavour effective Hamiltonian
-Matrix AMMHamiltonian(const Constants& c, Real z)
+Matrix hs::AMMHamiltonian(const Constants& c, Real z)
 {
     if (c.ProfileFlag)
     {
@@ -50,24 +51,24 @@ Matrix AMMHamiltonian(const Constants& c, Real z)
 }
 
 // Standard Model collective term
-Matrix VAHamiltonian(const Constants& c, const Matrix& rhoOpp, Real z)
+Matrix hs::VAHamiltonian(const Constants& c, const Matrix& rhoOpp, Real z, Real factor)
 {
     Matrix rhoG = rhoOpp * su4::G;
     Matrix tmp  = rhoG.trace()*su4::G + su4::Diag(su4::Round(rhoOpp));
 
     if (c.ProfileFlag)
     {
-        return tmp * (profileNu(z, c.R)*c.V_Nu*(1 - c.cosOmega));
+        return tmp * (profileNu(z, c.R)*c.V_Nu*(1 - c.cosOmega)*factor);
     }
     else
     {
-        return tmp * (c.V_Nu*(1 - c.cosOmega));
+        return tmp * (c.V_Nu*(1 - c.cosOmega)*factor);
     }
 }
 
 // The collective term that describes coupling through the scalar and 
 // pseudoscalar fields
-Matrix NSSIHamiltonian(const Constants& c, const Matrix& rhoOpp, Real z)
+Matrix hs::NSSIHamiltonian(const Constants& c, const Matrix& rhoOpp, Real z, Real factor)
 {
     Matrix diagRound    = su4::Diag(su4::Round(rhoOpp));
     Matrix offdiagRound = su4::Offdiag(su4::Round(rhoOpp));
@@ -75,10 +76,10 @@ Matrix NSSIHamiltonian(const Constants& c, const Matrix& rhoOpp, Real z)
 
     if (c.ProfileFlag)
     {
-        return tmp * (profileNu(z, c.R)*c.V_Nu*(1 - c.cosOmega));
+        return tmp * (profileNu(z, c.R)*c.V_Nu*(1 - c.cosOmega)*factor);
     }
     else
     {
-        return tmp * (c.V_Nu*(1 - c.cosOmega));
+        return tmp * (c.V_Nu*(1 - c.cosOmega)*factor);
     }
 }

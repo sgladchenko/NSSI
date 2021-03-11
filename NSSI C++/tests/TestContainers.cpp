@@ -129,6 +129,12 @@ double Test_Acc(int N)
     return elapsed.count();
 }
 
+struct Kek
+{
+    std::vector<Real> vec1;
+    std::vector<Real> vec2;
+};
+
 int main(int argc, char *argv[])
 {
     // Finally, the test of the acceleration
@@ -145,6 +151,14 @@ int main(int argc, char *argv[])
     omp_set_num_threads(threads);
     std::cout << "threads=" << threads << std::endl;
     std::cout << "Elapsed time: " << Test_Acc(10000) << " s" << std::endl;
+
+    Kek kek = {{1, 2, 3}, {4, 5, 6}};
+    Kek heh  = kek;
+
+    for (auto it = kek.vec1.begin(); it != kek.vec1.end(); ++it)
+    {
+        std::cout << *it << " ";
+    }
 
     return 0;
 }

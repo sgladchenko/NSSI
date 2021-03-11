@@ -6,9 +6,6 @@
 
 using json = nlohmann::json;
 
-// The default constructor
-Noise::Noise() : NoiseFlag {false} {}
-
 void getVectors(json& j, String section, String key, std::vector<su4::Vector>& stdvec)
 {
     for (auto it  = j[section][key].begin(); it != j[section][key].end(); ++it)
@@ -22,9 +19,8 @@ void getVectors(json& j, String section, String key, std::vector<su4::Vector>& s
     }
 }
 
-// The method that grabs all the needed data about the perturbations
-// in the initial conditions from the JSON
-void Noise::gather(String filename)
+// The default constructor
+Noise::Noise(String filename) : NoiseFlag {false}
 {
     // Similarly to the Constants class
     std::ifstream jsonParameters(filename);
