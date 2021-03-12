@@ -32,7 +32,7 @@ Matrix su4::Compose(const su4::Vector& v)
 }
 
 // Similar as above, but doesn't add an additional 0.25*Id
-Matrix ComposeTraceless(const su4::Vector& v)
+Matrix su4::ComposeTraceless(const su4::Vector& v)
 {
     Matrix res;
     res = Matrix::Zero();

@@ -64,10 +64,10 @@ class TwoLines
         // Acces to the size
         int dim() const {return vdim;}
 
-        // Finite differences for derivatives
+        // Finite differences of derivatives
         TwoLines derivative2ndOrder(Real step) const;
         TwoLines derivative4thOrder(Real step) const;
-        TwoLines derivative(Real step, int order) const;
+        TwoLines centralDerivative(Real step, int order) const;
 
         // Elementwise multiplication on the matrices of twoLines
         friend TwoLines dot(const TwoLines& twoLines1, const TwoLines& twoLines2);
@@ -75,6 +75,9 @@ class TwoLines
         // Some specific ones; this does elementwise normalisation
         // of the matrices, required in the scheme
         void su4Normalise(const TwoNorms& norms);
+
+        // Multiply by \pm
+        TwoLines pm() const;
 
         // Some special directive needed for the enabling additional acceleration
         // through the vectorized operations

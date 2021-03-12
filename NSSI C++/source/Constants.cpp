@@ -97,6 +97,7 @@ Constants::Constants(String filename)
 	Z   = getDouble(j,     "Scheme", "Z", units);
 	X   = getDouble(j,     "Scheme", "X", units);
 
+	WhichNorms         = getEntry<bool>(j, "Scheme", "WhichNorms");
 	PressFlag          = getEntry<bool>(j, "Scheme", "PressFlag");
 	su4NormaliseFlag   = getEntry<bool>(j, "Scheme", "su4NormaliseFlag");
 	xDerivativeOrder   = getEntry<int>(j,  "Scheme", "xDerivativeOrder");

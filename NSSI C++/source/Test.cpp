@@ -89,8 +89,7 @@ int main()
    vec.output();
    */
 
-    Noise n;
-    n.gather("./Noise.json");
+    Noise n("./Noise.json");
 
     return 0;
 }

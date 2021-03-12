@@ -65,7 +65,7 @@ class Constants
 
         // "Scheme"
         int N_z, N_x, xDerivativeOrder, su4NormalisePeriod;
-        bool PressFlag, su4NormaliseFlag;
+        bool PressFlag, su4NormaliseFlag, WhichNorms;
         Real Z, X;
 
         // "Profile"

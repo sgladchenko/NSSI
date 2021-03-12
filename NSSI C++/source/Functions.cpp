@@ -44,7 +44,7 @@ Real linearInterpolate(const Constants& c, Real x, const std::vector<Real>& vec)
 	Real rWeight = (scaled - lNode);
 
 	return lWeight*vec[((lNode % c.N_x) + c.N_x) % c.N_x] +
-           rWeight*vec[((rNode % c.N_x) + c.N_x) % c.N_x];
+           rWeight*vec[((rNode % c.N_x) + c.N_x) % c.N_x]; // Cycled indices
 }
 
 // Evaluates a sum of Fourier harmonics of su4::Vector's
@@ -76,7 +76,7 @@ TwoLines InitialConditions(const Constants& c, const Noise& n)
 {
     TwoLines tmp(c.N_x);
     #pragma omp parallel for
-    for (int i = 0; i < c.N_x; ++i)
+    for (int i=0; i<c.N_x; ++i)
     {
         Real x = i * c.dx;
         tmp.setleft(i)  = c.MeanLeft  + FourierVector(x, c.X, n.sinCoeffsLeft,  n.cosCoeffsLeft);
@@ -99,9 +99,16 @@ TwoLines Hamiltonians(const Constants& c, const TwoLines& rho, Real z)
     #pragma omp parallel for
     for (int i=0; i<c.N_x; ++i)
     {
-        Real x = i * c.dx;
-        Real lumLeft  = FourierLum(originLeft(c, x, z),  c.X, c.lumSinLeft,  c.lumCosLeft);
-        Real lumRight = FourierLum(originRight(c, x, z), c.X, c.lumSinRight, c.lumCosRight);
+        Real x = i * c.dx; Real lumLeft, lumRight;
+        if (c.OldNoiseFlag)
+        {
+            lumLeft  = FourierLum(originLeft(c, x, z),  c.X, c.lumSinLeft,  c.lumCosLeft);
+            lumRight = FourierLum(originRight(c, x, z), c.X, c.lumSinRight, c.lumCosRight);
+        }
+        else
+        {
+            lumLeft  = 1.0; lumRight = 1.0; 
+        }
         // Note that opposite to the left is right
         tmp.setleft(i) = hs::VacuumHamiltonian(c) +
                          hs::MSWHamiltonian(c, z) +

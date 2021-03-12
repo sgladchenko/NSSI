@@ -6,6 +6,20 @@ Headers =  -I "./NSSI C++/" -I "./NSSI C++/Eigen/" -I "./NSSI C++/JSON/single_in
 
 # The main part
 
+Main:
+	$(Compiler) $(Headers) -o nssi "$(Sources)Main.cpp" \
+								   "$(Sources)su4.cpp" \
+								   "$(Sources)Vector.cpp" \
+								   "$(Sources)Containers.cpp" \
+								   "$(Sources)Constants.cpp" \
+								   "$(Sources)Files.cpp" \
+								   "$(Sources)Functions.cpp" \
+								   "$(Sources)Hamiltonians.cpp" \
+								   "$(Sources)Noise.cpp" \
+								   "$(Sources)Scheme.cpp" \
+						   		   -std=c++17 \
+								   -fopenmp
+
 # Test section
 
 TestConstants:
@@ -32,5 +46,11 @@ TestContainers:
 								   "$(Sources)su4.cpp" \
 								   "$(Sources)Vector.cpp" \
 								   "$(Sources)Containers.cpp" \
+						   		   -std=c++17 \
+								   -fopenmp
+
+TestFiles:
+	$(Compiler) $(Headers) -o test "$(Tests)TestFiles.cpp" \
+								   "$(Sources)Files.cpp" \
 						   		   -std=c++17 \
 								   -fopenmp

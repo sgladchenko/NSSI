@@ -149,7 +149,7 @@ TwoLines TwoLines::derivative4thOrder(Real step) const
     return tmp;
 }
 
-TwoLines TwoLines::derivative(Real step, int order) const
+TwoLines TwoLines::centralDerivative(Real step, int order) const
 {
     if (order == 2)
     {
@@ -190,6 +190,20 @@ void TwoLines::su4Normalise(const TwoNorms& norms)
         vright[i] = su4::Normalise(vright[i], norms.rNorms[i]);
     }
 }
+
+// Multiply by \pm
+TwoLines TwoLines::pm() const
+{
+    TwoLines tmp(vdim);
+    #pragma omp parallel for
+    for (int i=0; i<vdim; ++i)
+    {
+        tmp.vleft[i]  = vleft[i];
+        tmp.vright[i] = vright[i]*(-1.0);
+    }
+    return tmp;
+}
+
 
 // STL-like output
 std::ostream& operator<<(std::ostream& os, const TwoLines& tl)

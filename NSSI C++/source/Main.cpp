@@ -1,25 +1,61 @@
-#include <unistd.h>
+#include <getopt.h>
 #include <chrono>
 #include <omp.h>
 
 #include "Scheme.h"
-#include "Containers.h"
 #include "Files.h"
 
 int main(int argc, char* argv[])
 {
     // Obtain a number of the threads;
     // The default one is 1
-    char opt; int Threads=1;
-    while ( (opt = getopt(argc, argv, "t:")) != -1)
+    struct option longoptions[] = 
     {
-        if (opt == 't')
+        {"numthreads", required_argument, NULL, 't'},
+        {"periodx",    required_argument, NULL, 'x'},
+        {"periodz",    required_argument, NULL, 'z'},
+        {"root",       required_argument, NULL, 'r'},
+        {"parameters", required_argument, NULL, 'p'},
+        {"noise",      required_argument, NULL, 'n'}
+    };
+
+    char opt;
+    // The parameters given as arguements in the command line
+    int Threads=1;
+    int periodN_x=1;
+    int periodN_z=1;
+    String root = "./Data/";
+    String parameters = "./Parameters.json";
+    String noise = "./Noise.json";
+
+    while ((opt = getopt_long(argc, argv, "", longoptions, NULL)) != -1)
+    {
+        switch (opt)
         {
-            Threads = atoi(optarg);
+            case 't': Threads = atoi(optarg); break;
+            case 'x': periodN_x = atoi(optarg); break;
+            case 'z': periodN_z = atoi(optarg); break;
+            case 'r': root = optarg; break;
+            case 'p': parameters = optarg; break;
+            case 'n': noise = optarg; break;
         }
     }
+
+    // Check if the root ends with /
+    if (root[root.length()-1] != '/')
+    {
+        root += "/";
+    }
+
     // Set obtained number of threads
     omp_set_num_threads(Threads);
+    
+    std::cout << "Set number of threads: " << Threads << std::endl;
+    std::cout << "Period of the displayed x grid: " << periodN_x << std::endl;
+    std::cout << "Period of the displayed z grid: " << periodN_z << std::endl;
+    std::cout << "Set root directory: " << root << std::endl;
+
+    Scheme Setup(parameters, noise, root, periodN_x, periodN_z);
 
     return 0;
 }
