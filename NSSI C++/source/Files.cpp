@@ -10,6 +10,13 @@
 namespace fs = std::filesystem;
 namespace ph = physicalConstants;
  
+// Strange way to write something in the binary mode
+template<typename T>
+void bin_write(std::ofstream& stream, T* buf, int count)
+{
+	stream.write(reinterpret_cast<char*>(buf), count*sizeof(T));
+}
+
 // Return a ctime time stamp
 String timeStamp()
 {
@@ -26,6 +33,7 @@ String setDir(String root)
     String time = timeStamp();
     String dir = root + "NSSI NLM " + time + "/";
     fs::create_directories(dir + "bin/"); //  This creates both dir and bin inside the dir
+    fs::create_directory(dir + "plots/");
     return dir;
 }
 
@@ -57,25 +65,32 @@ void dumpTwoLines(const Constants& c, Real z, int periodN_x, const TwoLines& tl,
     outZ.close();
     // Add probabilities
     std::ofstream outLeft(dir  + "bin/left.bin",  std::ios::app | std::ios::binary);
-    std::ofstream outRight(dir + "bin/right.bin", std::ios::app | std::ios::binary);
+    std::ofstream outRight(dir + "bin/right.bin", std::ios::app | std::ios::binary); // std::ios::app | std::ios::binary
     for (int i=0;i<c.N_x+1; ++i)
     {
         if (i % periodN_x == 0)
         {
             // left beam probabilities
-            Real eNuL  = tl.left(i)(0,0).real();
-            Real xNuL  = tl.left(i)(1,1).real();
-            Real eANuL = tl.left(i)(2,2).real();
-            Real xANuL = tl.left(i)(3,3).real();
+            Real ProbsL[4] = {tl.left(i)(0,0).real(),
+                              tl.left(i)(1,1).real(),
+                              tl.left(i)(2,2).real(),
+                              tl.left(i)(3,3).real()};
             // right beam probabilities
-            Real eNuR  = tl.right(i)(0,0).real();
-            Real xNuR  = tl.right(i)(1,1).real();
-            Real eANuR = tl.right(i)(2,2).real();
-            Real xANuR = tl.right(i)(3,3).real();
-            outLeft  << eNuL << xNuL << eANuL << xANuR;
-            outRight << eNuR << xNuR << eANuR << xANuR;
+            Real ProbsR[4] = {tl.right(i)(0,0).real(),
+                              tl.right(i)(1,1).real(),
+                              tl.right(i)(2,2).real(),
+                              tl.right(i)(3,3).real()};
+            
+            bin_write(outLeft,  ProbsL, 4);
+            bin_write(outRight, ProbsR, 4);
         }
     }
     outLeft.close();
     outRight.close();
+}
+
+// Writes the message in the stdout
+void stdoutLog(String message)
+{
+    std::cout << "[" << timeStamp() << "] " << message << std::endl;
 }

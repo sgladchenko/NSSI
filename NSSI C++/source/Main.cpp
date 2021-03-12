@@ -12,8 +12,8 @@ int main(int argc, char* argv[])
     struct option longoptions[] = 
     {
         {"numthreads", required_argument, NULL, 't'},
-        {"periodx",    required_argument, NULL, 'x'},
-        {"periodz",    required_argument, NULL, 'z'},
+        {"periodN_x",  required_argument, NULL, 'x'},
+        {"periodN_z",  required_argument, NULL, 'z'},
         {"root",       required_argument, NULL, 'r'},
         {"parameters", required_argument, NULL, 'p'},
         {"noise",      required_argument, NULL, 'n'}
@@ -56,6 +56,7 @@ int main(int argc, char* argv[])
     std::cout << "Set root directory: " << root << std::endl;
 
     Scheme Setup(parameters, noise, root, periodN_x, periodN_z);
+    Setup.Solve();
 
     return 0;
 }

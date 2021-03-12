@@ -13,28 +13,28 @@
 		"g_{+}":   1.0,
 		"n_e":    [0.0, "cm^-3"],
 		"n_n":    [0.0, "cm^-3"],
-		"n_Nu":   [5.0e28, "cm^-3"],
+		"n_Nu":   [1.5e28, "cm^-3"],
 		"mu_Nu":  [0.0, "muB"],
 		"Beff":   [0.0,  "G"]
 	},
 	"Initial Mixes":
 	{
-		"InitialProbsLeft":  [0.67, 0.0, 0.33, 0.0],
-		"InitialProbsRight": [0.67, 0.0, 0.33, 0.0],
+		"InitialProbsLeft":  [0.666666666666666, 0.0, 0.333333333333333, 0.0],
+		"InitialProbsRight": [0.666666666666666, 0.0, 0.333333333333333, 0.0],
 		"MagneticEps": 0.0
 	},
 	"Profile":
 	{
 		"toggle": false,
-		"R": [100.00, "km"]
+		"z_0": [100.00, "km"]
 	},
 	"Scheme":
 	{
-		"N_z":  5000,
+		"N_z":  500,
 		"Z":   [50.0, "km"],
-		"N_x":  5000,
+		"N_x":  500,
 		"X":   [50.0, "km"],
-		"PressFlag": false,
+		"PressFlag": true,
 		"xDerivativeOrder": 4,
 		"su4NormaliseFlag": true,
 		"su4NormalisePeriod": 1,
@@ -42,7 +42,7 @@
 	},
 	"Old Fashioned Noise":
 	{
-		"lumPerturbations": false,
+		"lumPerturbations": true,
         "N_lum": 4,
         "lumSinLeft": [
             -0.0007888358611412918,

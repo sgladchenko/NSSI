@@ -34,7 +34,7 @@ Noise::Noise(String filename) : NoiseFlag {false}
     json j = json::parse(noiseText);
 
     // Finally, let's save the data
-    N_Noise = j["Meta"]["N_perturb"].get<int>();
+    N_Noise = j["Meta"]["N_Noise"].get<int>();
 
     // And the Fourier components themselves
     getVectors(j, "Harmonics", "sinCoefficientsLeft",  sinCoeffsLeft);

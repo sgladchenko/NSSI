@@ -1,5 +1,7 @@
 #include "Scheme.h"
 
+namespace ph = physicalConstants;
+
 // RHS in the equation that derfines the z-derivatives.
 // In this case we use the central 2th or 4th approximation of the
 // x-derivative of the density matrices
@@ -7,7 +9,7 @@ TwoLines RHSCentral(const Constants& c, const TwoLines& rho, Real z)
 {
     TwoLines xDer = rho.centralDerivative(c.dx, c.xDerivativeOrder);
     TwoLines ham  = Hamiltonians(c, rho, z);
-    return c.tanChi*(xDer.pm()) + com(ham, rho)*(-1.0i / c.cosOmega);
+    return c.tanChi*(xDer.pm()) + com(ham, rho)*(-1.0i / c.cosChi);
 }
 
 // Evaluates next line in the scheme RK4 (in z direction) + central approximation
@@ -26,8 +28,10 @@ TwoLines RK4AndCentral(const Constants& c, const TwoLines& rho, Real z)
 Scheme::Scheme(String fParams, String fNoise, String root, int px, int pz)
        : c(fParams), n(fNoise), periodN_x(px), periodN_z(pz)
 {
+    stdoutLog("Initialization");
     // Set the directories
     dir = setDir(root);
+    stdoutLog("Located at " + dir);
     // Dump the JSON's
     c.dump(dir + "Parameters.json");
     n.dump(dir + "Noise.json");
@@ -44,6 +48,7 @@ Scheme::Scheme(String fParams, String fNoise, String root, int px, int pz)
 // Subsequently find all the lines, from z=c.dz to z=c.Z
 void Scheme::Solve()
 {
+    stdoutLog("Starting the calculations");
     for (int j=0; j<c.N_z; ++j)
     {
         Real z = j*c.dz;
@@ -62,7 +67,10 @@ void Scheme::Solve()
         // Dump the new lines (periodically)
         if ((j+1) % periodN_z == 0)
         {
+            stdoutLog("Saving data at z = " + std::to_string((z+c.dz)/ph::km) + " km");
             dumpTwoLines(c, z+c.dz, periodN_x, RhoNext, dir);
         }
+        // And interchange RhoNext and RhoPrev
+        RhoPrev = RhoNext;
     }
 }

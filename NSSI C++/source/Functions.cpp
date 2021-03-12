@@ -63,7 +63,7 @@ Matrix FourierVector(Real x, Real X, const std::vector<su4::Vector>& sinVecs,
 Real FourierLum(Real x, Real X, const std::vector<Real>& sinVecs,
                                 const std::vector<Real>& cosVecs)
 {
-    Real tmp;
+    Real tmp = 0.0;
     for (int k = 0; k < sinVecs.size(); ++k)
     {
         tmp += Sin(x, X, k+1)*sinVecs[k] + Cos(x, X, k+1)*cosVecs[k];

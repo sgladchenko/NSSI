@@ -2,6 +2,5 @@
 
 int main()
 {
-    makeDirectories("./Data/");
     return 0;
 }
