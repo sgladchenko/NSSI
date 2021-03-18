@@ -55,8 +55,19 @@ int main(int argc, char* argv[])
     std::cout << "Period of the displayed z grid: " << periodN_z << std::endl;
     std::cout << "Set root directory: " << root << std::endl;
 
+    // Time marks
+    auto start = std::chrono::high_resolution_clock::now();
+
     Scheme Setup(parameters, noise, root, periodN_x, periodN_z);
     Setup.Solve();
+
+    // Time marks
+    auto finish = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed = finish - start;
+
+    std::cout << "Calculation completed" << std::endl;
+    std::cout << "Elapsed time: " << elapsed.count() << " sec" << std::endl;
+    std::cout << "Location: " << Setup.location() << std::endl;
 
     return 0;
 }

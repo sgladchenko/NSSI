@@ -15,6 +15,10 @@ class Scheme
         // The main function that calculates each new line
         void Solve();
 
+        // Return the location directory
+        String location()
+        { return dir; }
+
     private:
         // The TwoLines object that will be calculated...
         TwoLines RhoNext;

@@ -13,7 +13,7 @@
 		"g_{+}":   1.0,
 		"n_e":    [0.0, "cm^-3"],
 		"n_n":    [0.0, "cm^-3"],
-		"n_Nu":   [1.5e28, "cm^-3"],
+		"n_Nu":   [1.0e29, "cm^-3"],
 		"mu_Nu":  [0.0, "muB"],
 		"Beff":   [0.0,  "G"]
 	},
@@ -30,11 +30,11 @@
 	},
 	"Scheme":
 	{
-		"N_z":  500,
+		"N_z":  10000,
 		"Z":   [50.0, "km"],
-		"N_x":  500,
+		"N_x":  10000,
 		"X":   [50.0, "km"],
-		"PressFlag": true,
+		"PressFlag": false,
 		"xDerivativeOrder": 4,
 		"su4NormaliseFlag": true,
 		"su4NormalisePeriod": 1,
@@ -42,7 +42,7 @@
 	},
 	"Old Fashioned Noise":
 	{
-		"lumPerturbations": true,
+		"lumPerturbations": false,
         "N_lum": 4,
         "lumSinLeft": [
             -0.0007888358611412918,

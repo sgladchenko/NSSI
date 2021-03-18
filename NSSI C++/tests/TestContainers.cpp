@@ -89,8 +89,8 @@ void Test_Operations()
         std::cout << "[" << i << "]:" << std::endl << tl6.right(i) << std::endl << std::endl;
     }
 
-    std::cout << "tl6.derivative(order=2) >>>" << std::endl << tl6.derivative(1.0, 2) << std::endl << std::endl;
-    std::cout << "tl6.derivative(order=4) >>>" << std::endl << tl6.derivative(1.0, 4) << std::endl << std::endl;
+    std::cout << "tl6.derivative(order=2) >>>" << std::endl << tl6.centralDerivative(1.0, 2) << std::endl << std::endl;
+    std::cout << "tl6.derivative(order=4) >>>" << std::endl << tl6.centralDerivative(1.0, 4) << std::endl << std::endl;
 }
 
 double Test_Acc(int N)
@@ -113,7 +113,7 @@ double Test_Acc(int N)
     // Calculations
     auto start = std::chrono::high_resolution_clock::now();
 
-    TwoLines der = tl.derivative(dx, 2);
+    TwoLines der = tl.centralDerivative(dx, 2);
 
     auto finish = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed = finish - start;
