@@ -7,13 +7,13 @@ namespace ph = physicalConstants;
 namespace hs = hamiltonians;
 
 // Origin of the left beam going thorugh the point (x,z)
-inline Real originLeft(const Constants& c, Real x, Real z)
+Real originLeft(const Constants& c, Real x, Real z)
 {
     return x + z*c.tanChi;
 }
 
-// Origin of the left beam going thorugh the point (x,z)
-inline Real originRight(const Constants& c, Real x, Real z)
+// Origin of the right beam going thorugh the point (x,z)
+Real originRight(const Constants& c, Real x, Real z)
 {
     return x - z*c.tanChi;
 }

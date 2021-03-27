@@ -64,8 +64,8 @@ class Constants
         Real MagneticEps;
 
         // "Scheme"
-        int N_z, N_x, xDerivativeOrder, su4NormalisePeriod;
-        bool PressFlag, su4NormaliseFlag, WhichNorms;
+        int N_z, N_x, xDerivativeOrder, su4NormalisePeriod, RegEigenvaluesPeriod;
+        bool PressFlag, su4NormaliseFlag, WhichNorms, RegEigenvaluesFlag;
         Real Z, X;
 
         // "Profile"

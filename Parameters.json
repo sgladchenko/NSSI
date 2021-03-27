@@ -19,8 +19,8 @@
 	},
 	"Initial Mixes":
 	{
-		"InitialProbsLeft":  [0.666666666666666, 0.0, 0.333333333333333, 0.0],
-		"InitialProbsRight": [0.666666666666666, 0.0, 0.333333333333333, 0.0],
+		"InitialProbsLeft":  [0.5, 0.1, 0.3, 0.1],
+		"InitialProbsRight": [0.5, 0.1, 0.3, 0.1],
 		"MagneticEps": 0.0
 	},
 	"Profile":
@@ -30,15 +30,17 @@
 	},
 	"Scheme":
 	{
-		"N_z":  10000,
+		"N_z":  8500,
 		"Z":   [50.0, "km"],
-		"N_x":  10000,
+		"N_x":  8500,
 		"X":   [50.0, "km"],
 		"PressFlag": false,
 		"xDerivativeOrder": 4,
 		"su4NormaliseFlag": true,
 		"su4NormalisePeriod": 1,
-		"WhichNorms": true
+		"WhichNorms": true,
+		"RegEigenvaluesFlag": true,
+		"RegEigenvaluesPeriod": 5
 	},
 	"Old Fashioned Noise":
 	{

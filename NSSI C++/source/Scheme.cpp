@@ -70,6 +70,12 @@ void Scheme::Solve()
             stdoutLog("Saving data at z = " + std::to_string((z+c.dz)/ph::km) + " km");
             dumpTwoLines(c, z+c.dz, periodN_x, RhoNext, dir);
         }
+        // Regularize the eigenvalues
+        if (((j+1) % c.RegEigenvaluesPeriod == 0) && c.RegEigenvaluesFlag)
+        {
+            stdoutLog("Regularization of eigenvalues");
+            RegEigenvalues(c, n, RhoNext, z+c.dz);
+        }
         // And interchange RhoNext and RhoPrev
         RhoPrev = RhoNext;
     }

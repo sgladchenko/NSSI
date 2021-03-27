@@ -52,6 +52,25 @@ namespace su4
 	Matrix MakeDiagonal(const std::vector<Real>& v);
 	Matrix MakeDiagonal(Real a, Real b, Real c, Real d);
 
+	// A pair of eigenvalue and its eigenvector
+	struct Eigenpair
+	{
+		Vector4 vec;
+		Real    val;
+		Eigenpair() : val(0.0) {}
+
+		EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+	};
+
+	// A peculiar function: it gets the matrix pre, 
+	// finds its eigenvalues and then aims that the egenvalues of m
+	// are very close to the ones of pre. Then it finds the spectral 
+	// decomposition of the pre and simply changes its eigenvalues
+	// to ones obtained from pre
+	Matrix SetEigenvalues(const Matrix& m, const Matrix& pre);
+	// "Aims" means in this context that it if finds the correspondence
+	// between eigenvalues of pre and m by just their order.
+
 	// My lovely su(4) basis in the Lie algebra
 	// used in different operations over the density matrices
 	// First, I need to define the following constants matrices
@@ -174,3 +193,6 @@ namespace su4
 su4::Vector operator*(Real z, const su4::Vector& vec);
 // An output in the STL-style
 std::ostream& operator<<(std::ostream& os, const su4::Vector& vec);
+
+// Compare these pairs by their eigenvalues
+bool compareEigenpairs(const su4::Eigenpair& e1, const su4::Eigenpair& e2);

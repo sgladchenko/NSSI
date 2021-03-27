@@ -97,11 +97,14 @@ Constants::Constants(String filename)
 	Z   = getDouble(j,     "Scheme", "Z", units);
 	X   = getDouble(j,     "Scheme", "X", units);
 
-	WhichNorms         = getEntry<bool>(j, "Scheme", "WhichNorms");
-	PressFlag          = getEntry<bool>(j, "Scheme", "PressFlag");
-	su4NormaliseFlag   = getEntry<bool>(j, "Scheme", "su4NormaliseFlag");
-	xDerivativeOrder   = getEntry<int>(j,  "Scheme", "xDerivativeOrder");
-	su4NormalisePeriod = getEntry<int>(j,  "Scheme", "su4NormalisePeriod");
+	WhichNorms           = getEntry<bool>(j, "Scheme", "WhichNorms");
+	PressFlag            = getEntry<bool>(j, "Scheme", "PressFlag");
+	su4NormaliseFlag     = getEntry<bool>(j, "Scheme", "su4NormaliseFlag");
+	RegEigenvaluesFlag   = getEntry<bool>(j, "Scheme", "RegEigenvaluesFlag");
+
+	xDerivativeOrder     = getEntry<int>(j,  "Scheme", "xDerivativeOrder");
+	su4NormalisePeriod   = getEntry<int>(j,  "Scheme", "su4NormalisePeriod");
+	RegEigenvaluesPeriod = getEntry<int>(j,  "Scheme", "RegEigenvaluesPeriod");
 
 	// Profile
 

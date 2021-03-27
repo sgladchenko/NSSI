@@ -37,10 +37,10 @@ Noise::Noise(String filename) : NoiseFlag {false}
     N_Noise = j["Meta"]["N_Noise"].get<int>();
 
     // And the Fourier components themselves
-    getVectors(j, "Harmonics", "sinCoefficientsLeft",  sinCoeffsLeft);
-    getVectors(j, "Harmonics", "cosCoefficientsLeft",  cosCoeffsLeft);
-    getVectors(j, "Harmonics", "sinCoefficientsRight", sinCoeffsRight);
-    getVectors(j, "Harmonics", "cosCoefficientsRight", cosCoeffsRight);
+    getVectors(j, "Harmonics", "sinCoeffsLeft",  sinCoeffsLeft);
+    getVectors(j, "Harmonics", "cosCoeffsLeft",  cosCoeffsLeft);
+    getVectors(j, "Harmonics", "sinCoeffsRight", sinCoeffsRight);
+    getVectors(j, "Harmonics", "cosCoeffsRight", cosCoeffsRight);
 }
 
 // Similarly to Constants

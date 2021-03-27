@@ -122,3 +122,8 @@ Real su4::Norm(const Matrix& m)
     Matrix traceless = m - 0.25*Matrix::Identity()*m.trace();
     return traceless.norm();
 }
+
+bool compareEigenpairs(const su4::Eigenpair& e1, const su4::Eigenpair& e2)
+{
+    return e1.val < e2.val;
+}

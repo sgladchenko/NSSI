@@ -17,6 +17,7 @@ Main:
 								   "$(Sources)Hamiltonians.cpp" \
 								   "$(Sources)Noise.cpp" \
 								   "$(Sources)Scheme.cpp" \
+								   "$(Sources)RegEigenvalues.cpp" \
 						   		   -std=c++17 \
 								   -fopenmp
 
@@ -52,5 +53,21 @@ TestContainers:
 TestFiles:
 	$(Compiler) $(Headers) -o test "$(Tests)TestFiles.cpp" \
 								   "$(Sources)Files.cpp" \
+						   		   -std=c++17 \
+								   -fopenmp
+
+TestReg:
+	$(Compiler) $(Headers) -o test "$(Tests)TestReg.cpp" \
+								   "$(Sources)su4.cpp" \
+								   "$(Sources)RegEigenvalues.cpp" \
+								   "$(Sources)Vector.cpp" \
+								   "$(Sources)Functions.cpp" \
+								   "$(Sources)Hamiltonians.cpp" \
+								   "$(Sources)Containers.cpp" \
+						   		   -std=c++17 \
+								   -fopenmp
+
+TestRegShort:
+	$(Compiler) $(Headers) -o test "$(Tests)TestReg.cpp" \
 						   		   -std=c++17 \
 								   -fopenmp

@@ -7,6 +7,15 @@
 #include "Constants.h"
 #include "Containers.h"
 
+// Origin of the left beam going thorugh the point (x,z)
+Real originLeft(const Constants& c, Real x, Real z);
+// Origin of the right beam going thorugh the point (x,z)
+Real originRight(const Constants& c, Real x, Real z);
+
+// Evaluates a sum of Fourier harmonics of su4::Vector's
+Matrix FourierVector(Real x, Real X, const std::vector<su4::Vector>& sinVecs,
+                                     const std::vector<su4::Vector>& cosVecs);
+
 // The function that initializes the TwoLines of the initial density matrices
 TwoLines InitialConditions(const Constants& c, const Noise& n);
 
@@ -23,3 +32,6 @@ TwoNorms ApproximateNorms(const Constants& c, const TwoNorms& initialNorms, Real
 
 // Same as above, but it actually calculates them directly
 TwoNorms TrueNorms(const Constants& c, const Noise& n, const TwoNorms& initNorms, Real z);
+
+// Regularization that sets the eigenvalues to ones that are set in the initial density matrices
+void RegEigenvalues(const Constants& c, const Noise& n, TwoLines& tl, Real z);

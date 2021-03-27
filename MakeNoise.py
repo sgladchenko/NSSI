@@ -38,7 +38,7 @@ def MakeNoise(N_Noise, sigma, filename="./Noise.json"):
 	#                                     ~ L/2 \times \sigma^2
 
 	# Desired rescaling
-	sigma_R = sigma / np.sqrt(N_Noise * 15)
+	sigma_R = sigma / (np.sqrt(N_Noise) * 15)
 
 	# Generate 2*N harmonics for the left beam
 	sinCoeffsLeft = [[random.gauss(0.0, sigma_R) for f in range(15)] for k in range(N_Noise)]
@@ -57,7 +57,7 @@ def MakeNoise(N_Noise, sigma, filename="./Noise.json"):
 		dictData["Meta"]["sigma"]   = sigma
 
 		# Save harmonics
-		dictData["Harmonics"]["sinCoefsLeft"]  = sinCoeffsLeft
+		dictData["Harmonics"]["sinCoeffsLeft"] = sinCoeffsLeft
 		dictData["Harmonics"]["cosCoeffsLeft"] = cosCoeffsLeft
 
 		dictData["Harmonics"]["sinCoeffsRight"] = sinCoeffsRight
