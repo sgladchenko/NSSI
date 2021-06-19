@@ -51,7 +51,7 @@ void BaseConstants(Constants& c)
 			  << "\t xDerivativeOrder = "   << c.xDerivativeOrder   << std::endl;
 
 	std::cout << "> Profile:" << std::endl;
-	std::cout << "\t z_0   = "       << c.z_0/ph::km << " km"  << std::endl
+	std::cout << "\t z_0   = "       << c.R/ph::km << " km"  << std::endl
 			  << "\t ProfileFlag = " << c.ProfileFlag << std::endl;
 
 	std::cout << "> Old fashioned noise" << std::endl;
@@ -103,8 +103,7 @@ void DerivedConstants(Constants& c)
 
 int main()
 {
-    Constants c;
-    c.gather("./Parameters copy.json");
+    Constants c("./Parameters copy.json");
     BaseConstants(c);
     DerivedConstants(c);
 

@@ -69,7 +69,7 @@ if __name__ == "__main__":
 	# Obtaining them from a command line
 
 	# Default ones
-	N_Noise = 3
+	N_Noise = 0
 	sigma = 0.05
 
 	if len(sys.argv) > 1:
@@ -89,3 +89,5 @@ if __name__ == "__main__":
 			else:
 				if each == "--old":
 					MakeFromOld()
+
+	MakeNoise(N_Noise, sigma)

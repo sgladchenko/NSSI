@@ -1,7 +1,7 @@
 {
 	"Basic":
 	{
-		"eta":          1,
+		"eta":          -1.0,
 		"theta":       [9.0, "deg"],
 		"Delta m^2_0": [2.43e-3, "eV^2"],
 		"E_0":         [10.0, "MeV"],
@@ -30,10 +30,10 @@
 	},
 	"Scheme":
 	{
-		"N_z":  8500,
-		"Z":   [50.0, "km"],
-		"N_x":  8500,
-		"X":   [50.0, "km"],
+		"N_z":  10000,
+		"Z":   [10.0, "km"],
+		"N_x":  10000,
+		"X":   [10.0, "km"],
 		"PressFlag": false,
 		"xDerivativeOrder": 4,
 		"su4NormaliseFlag": true,

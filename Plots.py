@@ -3,37 +3,68 @@
 import numpy as np
 import os
 import sys
-from Modules import OnePlot2D_PNG, Grids, Data, Rare, ObtainParameters
+from Modules import FourPlots1D, OnePlot2D_PNG, OnePlot2D_EPS, Grids, Data, Rare, ObtainParameters, Symm, Averages
+
+# Additional constants
+labels = [r"$\nu_e$", r"$\nu_x$", r"$\bar{\nu}_e$", r"$\bar{\nu}_x$"]
 
 def min2D(arr):
     return [min(each) for each in arr]
 
-if __name__ == "__main__":
-    directory, pX, pZ = ObtainParameters()        
-
+# Draws the basic plots that show the probabilities of the
+# x,z-plane
+def BasicPlots(directory, pX=1, pZ=1, fmt="png"):
     # Location of the plots
     plotDir = directory + "plots/"
-
     # Obtain grids
-    XGrid, ZGrid, D_z, D_x = Grids(directory)
-
+    XGrid, ZGrid, D_x, D_z = Grids(directory)
     # Obtain data
     print("Obtaining the data...")
     data = Data(directory, D_x, D_z, pX, pZ)
-
     # Make rare meshes
     XGridRare, ZGridRare = Rare(XGrid, ZGrid, pX, pZ)
 
     # Then let's draw the plots
     print("Drawing compressed plots located at: {}".format(plotDir))
-    OnePlot2D_PNG(XGridRare, ZGridRare, data[0], plotDir  + "eNuL.png", "Electron neutrino probability (Left)")
-    OnePlot2D_PNG(XGridRare, ZGridRare, data[1], plotDir  + "xNuL.png", "X neutrino probability (Left)")
-    OnePlot2D_PNG(XGridRare, ZGridRare, data[2], plotDir + "eANuL.png", "Electron antineutrino probability (Left)")
-    OnePlot2D_PNG(XGridRare, ZGridRare, data[3], plotDir + "xANuL.png", "X antineutrino probability (Left)")
+    filelabels  = ["eNu", "xNu", "eANu", "xANu"]
+    titlelabels = ["Electron neutrino probability",
+                   "X neutrino probability",
+                   "Electron antineutrino probability",
+                   "X antineutrino probability"]
 
-    OnePlot2D_PNG(XGridRare, ZGridRare, data[4], plotDir  + "eNuR.png", "Electron neutrino probability (Right)")
-    OnePlot2D_PNG(XGridRare, ZGridRare, data[5], plotDir  + "xNuR.png", "X neutrino probability (Right)")
-    OnePlot2D_PNG(XGridRare, ZGridRare, data[6], plotDir + "eANuR.png", "Electron antineutrino probability (Right)")
-    OnePlot2D_PNG(XGridRare, ZGridRare, data[7], plotDir + "xANuR.png", "X antineutrino probability (Right)")
+    filenames = [f"{each}L.{fmt}" for each in filelabels] + [f"{each}R.{fmt}" for each in filelabels]
+    titles    = [f"{each} (Left)"for each in titlelabels] + [f"{each} (Right)"for each in titlelabels]
 
-    #for i, each in enumerate(min2D(data[1])): print(i, each)
+    filenamesSymm = [f"{each}Symm.{fmt}" for each in filelabels]
+    titlesSymm = [f"{each} (Symmetric)" for each in titlelabels]
+    
+    # Left/right dependencies
+    for k,fn in enumerate(filenames):
+        if fmt == "png":
+            OnePlot2D_PNG(XGridRare, ZGridRare, data[k], plotDir  + fn, titles[k], dpi=512)
+        else:
+            OnePlot2D_EPS(XGridRare, ZGridRare, data[k], plotDir  + fn)
+    
+    # Symmetric functions
+    symm = Symm(data)
+    for k,fn in enumerate(filenamesSymm):
+        if fmt == "png":
+            OnePlot2D_PNG(XGridRare, ZGridRare, symm[k], plotDir  + fn, titlesSymm[k], dpi=512)
+        else:
+            OnePlot2D_EPS(XGridRare, ZGridRare, symm[k], plotDir  + fn)
+
+    # And then let's draw the average values
+    avsL, avsR = Averages(data)
+    if fmt == "png":
+        FourPlots1D(ZGridRare, avsL, plotDir + f"avsL.{fmt}", labels, "Average probabilities (Left)")
+        FourPlots1D(ZGridRare, avsR, plotDir + f"avsR.{fmt}", labels, "Average probabilities (Right)")
+    else:
+        FourPlots1D(ZGridRare, avsL, plotDir + f"avsL.{fmt}", labels)
+        FourPlots1D(ZGridRare, avsR, plotDir + f"avsR.{fmt}", labels)
+
+    return data, avsL, avsR, XGridRare, ZGridRare
+
+if __name__ == "__main__":
+    directory, pX, pZ = ObtainParameters()
+
+    BasicPlots(directory, pX, pZ, fmt="eps")

@@ -7,17 +7,15 @@ import numpy as np
 
 import sys
 
+dims = (5, 3.75)
+
 # Colours and other constants
-colour_e = "#324851"
-colour_x = "#86AC41"
-colour_ae = "#34675C"
-colour_ax = "#7DA3A1"
+colour_e = "#FF0000"
+colour_x = "#45BA45"
+colour_ae = "#1034A6"
+colour_ax = "#7F00FF"
 colours  = colour_e, colour_x, colour_ae, colour_ax
-
 viridis  = cm.get_cmap('viridis')
-twilight = cm.get_cmap('twilight')
-bone     = cm.get_cmap('bone')
-
 MainFontSize = 12
 
 # Some customisation of matplotlib
@@ -25,18 +23,27 @@ ticker.rcParams['xtick.direction'] = 'in'
 ticker.rcParams['ytick.direction'] = 'in'
 ticker.rcParams['xtick.labelsize'] = MainFontSize
 ticker.rcParams['ytick.labelsize'] = MainFontSize
-
 mpl.rcParams['font.family'] = ['serif']
 mpl.rcParams['font.serif']  = ['Times New Roman'] # Computer Modern Roman
 mpl.rcParams['legend.handlelength'] = 2
+
+rcParams['mathtext.fontset'] = 'cm'#'dejavuserif'
 
 # The functions that makes the rare grids
 # (so the points are actually displayed with some periods)
 def Rare(XGrid, ZGrid, pX, pZ):
     XGridRare = [x for ix, x in enumerate(XGrid) if ix % pX == 0]
     ZGridRare = [z for iz, z in enumerate(ZGrid) if iz % pZ == 0]
-
     return XGridRare, ZGridRare
+
+# Make a symmetric function
+def Symm(data):
+    symm = []
+    nz = len(data[0]); nx = len(data[0][0])
+    for f in range(4):
+        symm.append([[0.5*(data[f][iz][ix] + data[f+4][iz][ix]) for ix in range(nx)] for iz in range(nz)])
+
+    return symm
 
 # Obtain dir and periods from the console
 def ObtainParameters():
@@ -66,30 +73,57 @@ def ObtainParameters():
 
     return directory, pX, pZ
 
+# Aveage probabilities channel by channel
+def Averages(data):
+    # Average values of the left beam
+    avProbsL = [[sum(line)/len(line) for line in mesh] for mesh in data[:4]]
+    avProbsR = [[sum(line)/len(line) for line in mesh] for mesh in data[4:]]
+
+    return avProbsL, avProbsR
+
 # Standard 2D-plot
-def OnePlot2D_PNG(xCoordinates, zCoordinates, Mesh, filePlot, title, cs=viridis, dpi=None):
+def OnePlot2D_PNG(xCoordinates, zCoordinates, Mesh, filePlot, title=None, cs=viridis, dpi=None):
     MeshArray = np.array([[np.real(x) for x in line] for line in Mesh])
 
     xArray = np.array(xCoordinates)
     zArray = np.array(zCoordinates)
     xArray, zArray = np.meshgrid(xArray, zArray)
 
-    fig = Figure(figsize=(8, 6))
+    fig = Figure(figsize=dims)
     FigureCanvas(fig)
 
     axs  = fig.add_subplot(111)
     plot = axs.pcolor(xArray, zArray, MeshArray, cmap=cs, vmin=0.0, vmax=1.0)
 
-    axs.set_title(title, fontsize=MainFontSize)
-    axs.set_xlabel(r"$x, \mathrm{km}$")
-    axs.set_ylabel(r"$z, \mathrm{km}$")
+    if title: axs.set_title(title, fontsize=MainFontSize)
+    axs.set_xlabel(r"$x$, km", fontsize=MainFontSize)
+    axs.set_ylabel(r"$z$, km", fontsize=MainFontSize)
+    axs.set_aspect('equal')
+    
+    fig.colorbar(plot)
+    if dpi: fig.savefig(filePlot, fmt="png", bbox_inches='tight', dpi=dpi)
+    else:   fig.savefig(filePlot, fmt="png", bbox_inches='tight')
+
+# Same standard 2D-plot, but in EPS vector
+def OnePlot2D_EPS(xCoordinates, zCoordinates, Mesh, filePlot):
+    MeshArray = np.array([[np.real(x) for x in line] for line in Mesh])
+
+    xArray = np.array(xCoordinates)
+    zArray = np.array(zCoordinates)
+    xArray, zArray = np.meshgrid(xArray, zArray)
+
+    fig = Figure(figsize=dims)
+    FigureCanvas(fig)
+
+    axs  = fig.add_subplot(111)
+    plot = axs.pcolor(xArray, zArray, MeshArray, cmap=viridis, vmin=0.0, vmax=1.0, rasterized=True)
+
+    axs.set_xlabel(r"$x$, km", fontsize=MainFontSize)
+    axs.set_ylabel(r"$z$, km", fontsize=MainFontSize)
+    axs.set_aspect('equal')
 
     fig.colorbar(plot)
-
-    if dpi:
-        fig.savefig(filePlot, fmt="png", bbox_inches='tight', dpi=dpi)
-    else:
-        fig.savefig(filePlot, fmt="png", bbox_inches='tight')
+    fig.savefig(filePlot, fmt="eps", bbox_inches='tight', dpi=192)
 
 # Obtain the grids
 def Grids(dir):
@@ -117,20 +151,20 @@ def Grids(dir):
     return XGrid, ZGrid, len(XGrid), len(ZGrid)
 
 # Draw four one dimensional plots
-def FourPlots1D_PNG(zCoordinates, values, filePlot, title, labels, maxV=True):
-    fig1 = Figure(figsize=(7, 5))
+def FourPlots1D(zCoordinates, values, filePlot, labels, title=None, fmt="png", maxV=True):
+    fig1 = Figure(figsize=dims)
     FigureCanvas(fig1)
 
     axs1 = fig1.add_subplot(1, 1, 1)
-    axs1.set_xlabel(r"$x, \ \mathrm{km}$", fontsize=MainFontSize)
+    axs1.set_xlabel(r"$z$, km", fontsize=MainFontSize)
     axs1.set_ylabel(r"$\nu$ Probabilities", fontsize=MainFontSize)
     axs1.grid(False)
     axs1.set_xlim([zCoordinates[0], zCoordinates[-1]])
-    if maxV:
-        axs1.set_ylim([.0, 1.])
-    else:
-        axs1.set_ylim([.0, max([max(each) for each in values])])
-    axs1.set_title(title, fontsize=MainFontSize)
+
+    if maxV: axs1.set_ylim([0.0, 1.0])
+    else: axs1.set_ylim([0.0, max([max(each) for each in values])])
+
+    if title: axs1.set_title(title, fontdict={'fontsize':MainFontSize,})
 
     curves = [None for i in range(4)]
     for i, each in enumerate(values):
@@ -143,7 +177,7 @@ def FourPlots1D_PNG(zCoordinates, values, filePlot, title, labels, maxV=True):
         )[0]
 
     axs1.legend(curves, labels, fontsize=MainFontSize, loc="upper right")
-    fig1.savefig(filePlot, fmt="png", bbox_inches='tight')
+    fig1.savefig(filePlot, fmt=fmt, bbox_inches='tight', dpi=192)
 
 # Obtain the full data
 def Data(dir, D_x, D_z, pX, pZ):
