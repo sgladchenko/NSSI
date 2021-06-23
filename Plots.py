@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 
 import numpy as np
-import os
-import sys
+import os, sys, json
 from Modules import FourPlots1D, OnePlot2D_PNG, OnePlot2D_EPS, Grids, Data, Rare, ObtainParameters, Symm, Averages
 
 # Additional constants
@@ -61,6 +60,17 @@ def BasicPlots(directory, pX=1, pZ=1, fmt="png"):
     else:
         FourPlots1D(ZGridRare, avsL, plotDir + f"avsL.{fmt}", labels)
         FourPlots1D(ZGridRare, avsR, plotDir + f"avsR.{fmt}", labels)
+
+    # And one more nice functionaly: let's save the average
+    # probabilities in a special JSON file
+    averagesDir = directory + "averages/"
+    if "averages" not in [f.name for f in os.scandir(directory)]:
+        os.mkdir(averagesDir)
+    
+    with open(averagesDir + "avsL.json", "w") as fout:
+        json.dump({"ZGridRare": ZGridRare, "avs": avsL}, fout, indent=4)
+    with open(averagesDir + "avsR.json", "w") as fout:
+        json.dump({"ZGridRare": ZGridRare, "avs": avsR}, fout, indent=4)
 
     return data, avsL, avsR, XGridRare, ZGridRare
 

@@ -105,7 +105,7 @@ def OnePlot2D_PNG(xCoordinates, zCoordinates, Mesh, filePlot, title=None, cs=vir
     else:   fig.savefig(filePlot, fmt="png", bbox_inches='tight')
 
 # Same standard 2D-plot, but in EPS vector
-def OnePlot2D_EPS(xCoordinates, zCoordinates, Mesh, filePlot):
+def OnePlot2D_EPS(xCoordinates, zCoordinates, Mesh, filePlot, dpi=200):
     MeshArray = np.array([[np.real(x) for x in line] for line in Mesh])
 
     xArray = np.array(xCoordinates)
@@ -123,7 +123,7 @@ def OnePlot2D_EPS(xCoordinates, zCoordinates, Mesh, filePlot):
     axs.set_aspect('equal')
 
     fig.colorbar(plot)
-    fig.savefig(filePlot, fmt="eps", bbox_inches='tight', dpi=192)
+    fig.savefig(filePlot, fmt="eps", bbox_inches='tight', dpi=dpi)
 
 # Obtain the grids
 def Grids(dir):
@@ -157,7 +157,7 @@ def FourPlots1D(zCoordinates, values, filePlot, labels, title=None, fmt="png", m
 
     axs1 = fig1.add_subplot(1, 1, 1)
     axs1.set_xlabel(r"$z$, km", fontsize=MainFontSize)
-    axs1.set_ylabel(r"$\nu$ Probabilities", fontsize=MainFontSize)
+    axs1.set_ylabel(r"$\bar{P}_{f}(z)$", fontsize=MainFontSize)
     axs1.grid(False)
     axs1.set_xlim([zCoordinates[0], zCoordinates[-1]])
 
@@ -197,3 +197,50 @@ def Data(dir, D_x, D_z, pX, pZ):
     xANuR = [[RData[4*D_x*j + 4*i + 3] for i in range(D_x) if i % pX == 0] for j in range(D_z) if j % pZ == 0]
 
     return eNuL, xNuL, eANuL, xANuL, eNuR, xNuR, eANuR, xANuR
+
+# Functions that makes a plot
+def PlotAverageFlavours(xs, xlims, xlabel, flavours, ylims, labels, filePlot, fmt="eps"):
+    fig1 = Figure(figsize=dims)
+    FigureCanvas(fig1)
+
+    axs1 = fig1.add_subplot(1, 1, 1)
+    axs1.set_xlabel(xlabel, fontsize=MainFontSize)
+    axs1.set_ylabel(r"$\langle \bar{P}_f \rangle$", fontsize=MainFontSize)
+    axs1.grid(False)
+    axs1.set_xlim(xlims)
+    axs1.set_ylim(ylims)
+
+    curves = [None for i in range(4)]
+    for i, each in enumerate(flavours):
+        curves[i] = axs1.plot(
+            xs,
+            each,
+            'D-',
+            markersize=3.0,
+            color=colours[i]
+        )[0]
+
+    axs1.legend(curves, labels, fontsize=MainFontSize, loc="upper right")
+    fig1.savefig(filePlot, fmt=fmt, bbox_inches='tight')
+
+# Functions that makes a plot
+def PlotAverageNuNubars(xs, xlims, xlabel, nunubars, ylims, filePlot, fmt="eps"):
+    fig1 = Figure(figsize=dims)
+    FigureCanvas(fig1)
+
+    axs1 = fig1.add_subplot(1, 1, 1)
+    axs1.set_xlabel(xlabel, fontsize=MainFontSize)
+    axs1.set_ylabel(r"$\langle \bar{P}_{\nu} \rangle / \langle \bar{P}_{\bar{\nu}} \rangle$", fontsize=MainFontSize)
+    axs1.grid(False)
+    axs1.set_xlim(xlims)
+    axs1.set_ylim(ylims)
+
+    axs1.plot(
+        xs,
+        nunubars,
+        'D--',
+        markersize=3.0,
+        color="black"
+    )
+
+    fig1.savefig(filePlot, fmt=fmt, bbox_inches='tight')

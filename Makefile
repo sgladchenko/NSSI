@@ -1,4 +1,4 @@
-Compiler    = g++
+Compiler = g++
 
 Sources =  ./NSSI C++/source/
 Tests   =  ./NSSI C++/tests/

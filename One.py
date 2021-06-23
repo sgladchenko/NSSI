@@ -3,7 +3,7 @@
 import numpy as np
 import os
 import sys
-from Modules import OnePlot2D_PNG, Grids, Data, Rare, ObtainParameters
+from Modules import OnePlot2D_PNG, OnePlot2D_EPS, Grids, Data, Rare, ObtainParameters
 
 if __name__ == "__main__":
     directory, pX, pZ = ObtainParameters()        
@@ -23,4 +23,4 @@ if __name__ == "__main__":
 
     # Then let's draw the plots
     print("Drawing high res plot of eNuL at: {}".format(plotDir))
-    OnePlot2D_PNG(XGridRare, ZGridRare, data[0], plotDir  + "eNuL_Precise.png",  "Electron neutrino probability (Left)", dpi=512)
+    OnePlot2D_EPS(XGridRare, ZGridRare, data[0], plotDir  + "eNuL_Precise.eps", dpi=192)

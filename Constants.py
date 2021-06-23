@@ -112,6 +112,10 @@ class Constants:
             else:
                 self.Hierarchy = "IH"
 
+            # Mu level
+            self.omegaVac = self.dm2_0 / (2.0 * self.E_0 * hbarc)
+            self.muOverOmega = self.V_Nu * (1.0 - self.cosOmega) / self.omegaVac
+
         with open(filename, "r") as fileJSON:
             self.text = fileJSON.read()
 
