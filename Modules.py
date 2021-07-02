@@ -4,17 +4,20 @@ from matplotlib import ticker, rcParams, cm
 
 import matplotlib as mpl
 import numpy as np
+from scipy.interpolate import griddata
 
 import sys
 
-dims = (5, 3.75)
+# Default values of the dimensions of the plots
+defaultDims = (6, 4.5)
 
 # Colours and other constants
 colour_e = "#FF0000"
 colour_x = "#45BA45"
 colour_ae = "#1034A6"
 colour_ax = "#7F00FF"
-colours  = colour_e, colour_x, colour_ae, colour_ax
+colour_NB = "#050505"
+colours  = colour_e, colour_x, colour_ae, colour_ax, colour_NB
 viridis  = cm.get_cmap('viridis')
 MainFontSize = 12
 
@@ -82,7 +85,7 @@ def Averages(data):
     return avProbsL, avProbsR
 
 # Standard 2D-plot
-def OnePlot2D_PNG(xCoordinates, zCoordinates, Mesh, filePlot, title=None, cs=viridis, dpi=None):
+def OnePlot2D_PNG(xCoordinates, zCoordinates, Mesh, filePlot, title=None, cs=viridis, dpi=None, dims=defaultDims):
     MeshArray = np.array([[np.real(x) for x in line] for line in Mesh])
 
     xArray = np.array(xCoordinates)
@@ -105,7 +108,7 @@ def OnePlot2D_PNG(xCoordinates, zCoordinates, Mesh, filePlot, title=None, cs=vir
     else:   fig.savefig(filePlot, fmt="png", bbox_inches='tight')
 
 # Same standard 2D-plot, but in EPS vector
-def OnePlot2D_EPS(xCoordinates, zCoordinates, Mesh, filePlot, dpi=200):
+def OnePlot2D_EPS(xCoordinates, zCoordinates, Mesh, filePlot, dpi=200, dims=defaultDims):
     MeshArray = np.array([[np.real(x) for x in line] for line in Mesh])
 
     xArray = np.array(xCoordinates)
@@ -151,7 +154,7 @@ def Grids(dir):
     return XGrid, ZGrid, len(XGrid), len(ZGrid)
 
 # Draw four one dimensional plots
-def FourPlots1D(zCoordinates, values, filePlot, labels, title=None, fmt="png", maxV=True):
+def FourPlots1D(zCoordinates, values, filePlot, labels, title=None, fmt="png", maxV=True, dims=defaultDims):
     fig1 = Figure(figsize=dims)
     FigureCanvas(fig1)
 
@@ -199,13 +202,13 @@ def Data(dir, D_x, D_z, pX, pZ):
     return eNuL, xNuL, eANuL, xANuL, eNuR, xNuR, eANuR, xANuR
 
 # Functions that makes a plot
-def PlotAverageFlavours(xs, xlims, xlabel, flavours, ylims, labels, filePlot, fmt="eps"):
+def PlotAverageFlavours(xs, xlims, xlabel, flavours, ylims, labels, fileplot, fmt="eps", dims=defaultDims):
     fig1 = Figure(figsize=dims)
     FigureCanvas(fig1)
 
     axs1 = fig1.add_subplot(1, 1, 1)
     axs1.set_xlabel(xlabel, fontsize=MainFontSize)
-    axs1.set_ylabel(r"$\langle \bar{P}_f \rangle$", fontsize=MainFontSize)
+    #axs1.set_ylabel(r"$\langle \bar{P}_f \rangle$", fontsize=MainFontSize)
     axs1.grid(False)
     axs1.set_xlim(xlims)
     axs1.set_ylim(ylims)
@@ -221,16 +224,16 @@ def PlotAverageFlavours(xs, xlims, xlabel, flavours, ylims, labels, filePlot, fm
         )[0]
 
     axs1.legend(curves, labels, fontsize=MainFontSize, loc="upper right")
-    fig1.savefig(filePlot, fmt=fmt, bbox_inches='tight')
+    fig1.savefig(fileplot, fmt=fmt, bbox_inches='tight')
 
 # Functions that makes a plot
-def PlotAverageNuNubars(xs, xlims, xlabel, nunubars, ylims, filePlot, fmt="eps"):
+def PlotAverageNuNubars(xs, xlims, xlabel, nunubars, ylims, fileplot, fmt="eps", dims=defaultDims):
     fig1 = Figure(figsize=dims)
     FigureCanvas(fig1)
 
     axs1 = fig1.add_subplot(1, 1, 1)
     axs1.set_xlabel(xlabel, fontsize=MainFontSize)
-    axs1.set_ylabel(r"$\langle \bar{P}_{\nu} \rangle / \langle \bar{P}_{\bar{\nu}} \rangle$", fontsize=MainFontSize)
+    #axs1.set_ylabel(r"$\langle \bar{P}_{\nu} \rangle / \langle \bar{P}_{\bar{\nu}} \rangle$", fontsize=MainFontSize)
     axs1.grid(False)
     axs1.set_xlim(xlims)
     axs1.set_ylim(ylims)
@@ -243,4 +246,35 @@ def PlotAverageNuNubars(xs, xlims, xlabel, nunubars, ylims, filePlot, fmt="eps")
         color="black"
     )
 
-    fig1.savefig(filePlot, fmt=fmt, bbox_inches='tight')
+    fig1.savefig(fileplot, fmt=fmt, bbox_inches='tight')
+
+#cmaps = [cm.get_cmap('viridis')]
+
+def PlotSurface(xs, xlims, ys, ylims, zs, zlims, flav, fileplot, fmt="eps", dims=defaultDims):
+    fig = Figure(figsize=dims)
+    FigureCanvas(fig)
+
+    axs = fig.add_subplot(111, projection='3d')
+    axs.set_xlabel(r"$g_{+}$", fontsize=MainFontSize)
+    axs.set_ylabel(r"$\mu / \omega$", fontsize=MainFontSize)
+    axs.set_xlim(xlims)
+    axs.set_ylim(ylims)
+    axs.set_zlim(zlims)
+
+    points = []; values = []
+    for ix,x in enumerate(xs):
+        for iy,y in enumerate(ys):
+            points.append([x,y])
+            values.append(zs[iy][ix])
+
+    xArray = np.linspace(xlims[0], xlims[1], 100)
+    yArray = np.linspace(ylims[0], ylims[1], 100)
+    xArray, yArray = np.meshgrid(xArray, yArray)
+    zArray = griddata(points, values, (xArray,yArray), method="linear")
+    axs.plot_surface(xArray, yArray, zArray, cmap=viridis)
+
+    #X, Y = np.meshgrid(xs, ys)
+    #Z    = np.array(zs)
+    #axs.plot_surface(X, Y, Z, cmap=viridis)
+
+    fig.savefig(fileplot, fmt=fmt, bbox_inches='tight')
