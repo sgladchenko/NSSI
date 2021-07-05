@@ -248,18 +248,15 @@ def PlotAverageNuNubars(xs, xlims, xlabel, nunubars, ylims, fileplot, fmt="eps",
 
     fig1.savefig(fileplot, fmt=fmt, bbox_inches='tight')
 
-#cmaps = [cm.get_cmap('viridis')]
-
 def PlotSurface(xs, xlims, ys, ylims, zs, zlims, flav, fileplot, fmt="eps", dims=defaultDims):
     fig = Figure(figsize=dims)
     FigureCanvas(fig)
 
-    axs = fig.add_subplot(111, projection='3d')
+    axs = fig.add_subplot(111)#, projection='3d')
     axs.set_xlabel(r"$g_{+}$", fontsize=MainFontSize)
     axs.set_ylabel(r"$\mu / \omega$", fontsize=MainFontSize)
     axs.set_xlim(xlims)
     axs.set_ylim(ylims)
-    axs.set_zlim(zlims)
 
     points = []; values = []
     for ix,x in enumerate(xs):
@@ -267,14 +264,17 @@ def PlotSurface(xs, xlims, ys, ylims, zs, zlims, flav, fileplot, fmt="eps", dims
             points.append([x,y])
             values.append(zs[iy][ix])
 
-    xArray = np.linspace(xlims[0], xlims[1], 100)
-    yArray = np.linspace(ylims[0], ylims[1], 100)
+    xArray = np.linspace(xlims[0], xlims[1], 500)
+    yArray = np.linspace(ylims[0], ylims[1], 500)
     xArray, yArray = np.meshgrid(xArray, yArray)
     zArray = griddata(points, values, (xArray,yArray), method="linear")
-    axs.plot_surface(xArray, yArray, zArray, cmap=viridis)
+    #axs.plot_surface(xArray, yArray, zArray, cmap=cm.get_cmap("winter"), shade=True, linewidth=5)
+    plot = axs.pcolor(xArray, yArray, zArray, cmap=cm.get_cmap("inferno"), rasterized=True)#, vmin=zlims[0], vmax=zlims[1])
 
     #X, Y = np.meshgrid(xs, ys)
     #Z    = np.array(zs)
     #axs.plot_surface(X, Y, Z, cmap=viridis)
+    #axs.set_zlim(zlims)
 
+    fig.colorbar(plot)
     fig.savefig(fileplot, fmt=fmt, bbox_inches='tight')
