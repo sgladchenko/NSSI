@@ -67,4 +67,4 @@ if __name__ == "__main__":
     gPluses = [0.00,  0.25,  0.50,  0.75,  1.00]
     muNPairs = [(10.0, 10000), (20.0, 14000), (30.0, 18000), (40.0, 22000), (50.0, 26000)]
 
-    makeTask(muNPairs, gPluses, "./Parameters.json", "./Scans/Scan2D_20km_Parameters")
+    makeTask(muNPairs, gPluses, "./build/Parameters.json", "./build/Scans/Scan2D_20km_Parameters")
