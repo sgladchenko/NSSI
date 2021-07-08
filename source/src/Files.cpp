@@ -1,3 +1,6 @@
+// Undefine to use C++17 std::filesystem
+//#define __DONT_USE_STD_FILESYSTEM__
+
 #include "Files.h"
 
 #include <chrono>
@@ -5,9 +8,58 @@
 
 #include <iostream>
 #include <fstream>
-#include <filesystem>
 
-namespace fs = std::filesystem;
+#ifndef __DONT_USE_STD_FILESYSTEM__
+
+	#include <filesystem>
+	namespace fs = std::filesystem;
+	
+#else // Add support for older gcc compilers/linkers [added by O.K., 20Jun2021]
+
+    #include <sstream>
+
+    #if !defined(__LINUX__) && !defined(__linux__) && !defined(__gnu_linux__)
+        #include <direct.h>
+    #else
+        #include <sys/stat.h>
+        inline int _mkdir(const char* dirName)
+        {
+            return mkdir(dirName, S_IRUSR | S_IWUSR | S_IXUSR);
+        }
+    #endif
+
+    template <typename T>
+    std::string ToString(const T& x)
+    {
+        std::ostringstream os;
+        os << x;
+        return os.str();
+    }
+
+    inline bool DirectoryExists(const std::string& fileName)
+    {
+        #if defined(__LINUX__) || defined(__linux__) || defined(__gnu_linux__)
+            struct stat sb;
+            return stat(fileName.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode);
+        #else  // Windows
+            std::string nulFile = fileName + dirSep + "nul";
+            std::ofstream os(nulFile.c_str(), std::ios::app);
+            return (bool)os;
+        #endif
+    }
+
+    inline void CreateDirectory(const std::string& dir)
+    {
+        if(DirectoryExists(dir))
+            return;
+        auto error = _mkdir(dir.c_str());
+        if(error != 0)
+            throw "Cannot create directory \"" + dir + "\", error code " + ToString(error);
+    }
+	  
+#endif
+
+
 namespace ph = physicalConstants;
  
 // Strange way to write something in the binary mode
@@ -32,8 +84,17 @@ String setDir(String root)
 {
     String time = timeStamp();
     String dir = root + "NSSI NLM " + time + "/";
-    fs::create_directories(dir + "bin/"); //  This creates both dir and bin inside the dir
-    fs::create_directory(dir + "plots/");
+	
+	#ifndef __DONT_USE_STD_FILESYSTEM__
+		fs::create_directories(dir + "bin/"); //  This creates both dir and bin inside the dir
+		fs::create_directory(dir + "plots/");
+	#else
+		CreateDirectory(root);
+		CreateDirectory(dir);
+		CreateDirectory(dir + "bin/");
+		CreateDirectory(dir + "plots/");
+	#endif
+	
     return dir;
 }
 
