@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
-import unittest, os, random, string, json, shutil
+import unittest, os, random, string, json, shutil, sys
+
+sys.path.append("..")
 from Scan2D import Setup, makeMatrices, WrongNumberPoints
 from Scan2D import Scan2D
 
