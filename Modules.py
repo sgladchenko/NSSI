@@ -189,15 +189,15 @@ def Data(dir, D_x, D_z, pX, pZ):
     RData  = np.fromfile(dir + "bin/right.bin", dtype=np.float64)
     
     # Deserialize
-    eNuL  = [[LData[4*D_x*j + 4*i + 0] for i in range(D_x) if i % pX == 0] for j in range(D_z) if j % pZ == 0]
-    xNuL  = [[LData[4*D_x*j + 4*i + 1] for i in range(D_x) if i % pX == 0] for j in range(D_z) if j % pZ == 0]
-    eANuL = [[LData[4*D_x*j + 4*i + 2] for i in range(D_x) if i % pX == 0] for j in range(D_z) if j % pZ == 0]
-    xANuL = [[LData[4*D_x*j + 4*i + 3] for i in range(D_x) if i % pX == 0] for j in range(D_z) if j % pZ == 0]    
+    eNuL  = [[LData[4*D_x*j + 4*i + 0] for i in range(0,D_x,pX)] for j in range(0,D_z,pZ)]
+    xNuL  = [[LData[4*D_x*j + 4*i + 1] for i in range(0,D_x,pX)] for j in range(0,D_z,pZ)]
+    eANuL = [[LData[4*D_x*j + 4*i + 2] for i in range(0,D_x,pX)] for j in range(0,D_z,pZ)]
+    xANuL = [[LData[4*D_x*j + 4*i + 3] for i in range(0,D_x,pX)] for j in range(0,D_z,pZ)]    
 
-    eNuR  = [[RData[4*D_x*j + 4*i + 0] for i in range(D_x) if i % pX == 0] for j in range(D_z) if j % pZ == 0]
-    xNuR  = [[RData[4*D_x*j + 4*i + 1] for i in range(D_x) if i % pX == 0] for j in range(D_z) if j % pZ == 0]
-    eANuR = [[RData[4*D_x*j + 4*i + 2] for i in range(D_x) if i % pX == 0] for j in range(D_z) if j % pZ == 0]
-    xANuR = [[RData[4*D_x*j + 4*i + 3] for i in range(D_x) if i % pX == 0] for j in range(D_z) if j % pZ == 0]
+    eNuR  = [[RData[4*D_x*j + 4*i + 0] for i in range(0,D_x,pX)] for j in range(0,D_z,pZ)]
+    xNuR  = [[RData[4*D_x*j + 4*i + 1] for i in range(0,D_x,pX)] for j in range(0,D_z,pZ)]
+    eANuR = [[RData[4*D_x*j + 4*i + 2] for i in range(0,D_x,pX)] for j in range(0,D_z,pZ)]
+    xANuR = [[RData[4*D_x*j + 4*i + 3] for i in range(0,D_x,pX)] for j in range(0,D_z,pZ)]
 
     return eNuL, xNuL, eANuL, xANuL, eNuR, xNuR, eANuR, xANuR
 
@@ -268,13 +268,37 @@ def PlotSurface(xs, xlims, ys, ylims, zs, zlims, flav, fileplot, fmt="eps", dims
     yArray = np.linspace(ylims[0], ylims[1], 500)
     xArray, yArray = np.meshgrid(xArray, yArray)
     zArray = griddata(points, values, (xArray,yArray), method="linear")
-    #axs.plot_surface(xArray, yArray, zArray, cmap=cm.get_cmap("winter"), shade=True, linewidth=5)
     plot = axs.pcolor(xArray, yArray, zArray, cmap=cm.get_cmap("inferno"), rasterized=True)#, vmin=zlims[0], vmax=zlims[1])
 
-    #X, Y = np.meshgrid(xs, ys)
-    #Z    = np.array(zs)
-    #axs.plot_surface(X, Y, Z, cmap=viridis)
-    #axs.set_zlim(zlims)
+    fig.colorbar(plot)
+    fig.savefig(fileplot, fmt=fmt, bbox_inches='tight')
 
+def PlotStability(xs, xlims, xlabel, ys, ylims, ylabel, zs, fileplot, fmt="eps", dims=defaultDims):
+    fig = Figure(figsize=dims)
+    FigureCanvas(fig)
+
+    axs = fig.add_subplot(111)
+    axs.set_xlabel(xlabel, fontsize=MainFontSize)
+    axs.set_ylabel(ylabel, fontsize=MainFontSize)
+    axs.set_xlim(xlims)
+    axs.set_ylim(ylims)
+
+    xArray, yArray = np.meshgrid(xs, ys)
+    zArray = np.array(zs)
+
+    """
+    points = []; values = []
+    for ix,x in enumerate(xs):
+        for iy,y in enumerate(ys):
+            points.append([x,y])
+            values.append(zs[iy][ix])
+
+    xArray = np.linspace(xlims[0], xlims[1], 1000)
+    yArray = np.linspace(ylims[0], ylims[1], 1000)
+    xArray, yArray = np.meshgrid(xArray, yArray)
+    zArray = griddata(points, values, (xArray,yArray), method="cubic")
+    """
+
+    plot = axs.pcolor(xArray, yArray, zArray, cmap=cm.get_cmap("inferno"), rasterized=True)
     fig.colorbar(plot)
     fig.savefig(fileplot, fmt=fmt, bbox_inches='tight')

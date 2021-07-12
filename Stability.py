@@ -3,6 +3,7 @@
 import numpy as np
 from copy import deepcopy
 from Lambdas import su4Diag, su4Offdiag, su4Round, com, BiggestRealEigPart, flavourSigma3, G
+from Modules import PlotStability
 
 # In all the further fomulae zeta=+1 corresponds to the 'left' beam
 # and zeta=-1 to the 'right' one; the matrices will be packed as (left,right)
@@ -73,14 +74,17 @@ class Pair:
         tmp[index] = 1.0
         return tmp
 
+    def __str__(self):
+        return str(self.pair[0]) + "\n" + str(self.pair[1])
+
 class Setup:
     def __init__(self, eta, q, mu, gPlus, chi, rhoInit):
         self.eta = eta
         self.q = q
         self.mu  = mu
         self.gPlus = gPlus
-        self.tan = np.tan(chi)
-        self.cos = np.cos(chi)
+        self.tan = np.tan(chi * np.pi / 180.0) # chi is in degrees
+        self.cos = np.cos(chi * np.pi / 180.0)
         self.rhoInit = rhoInit
 
 # Returns a vacuum Hamiltonian in the units of omega_{vac}
@@ -89,7 +93,7 @@ def VacHam(setup):
 
 # A function that states in the collective part of the total Hamiiltonian
 def CollHam(setup, rho):
-    SMPart   = np.trace(rho @ G)*G + su4Round(rho)
+    SMPart   = np.trace(rho @ G)*G + su4Diag(su4Round(rho))
     NSSIPart = setup.gPlus * su4Offdiag(su4Round(rho)).T
     return setup.mu * (SMPart + NSSIPart)
 
@@ -112,3 +116,53 @@ def L(setup, pair):
     # And finally, the Pair instance containg the matrices
     return Pair(lDerivativeX + lCommutator1 + lCommutator2,
                 rDerivativeX + rCommutator1 + rCommutator2)
+
+def LMatrix(setup):
+    # A matrix of the linear map of L, acting on the entire
+    # space of the \delta \rho matrices
+    LM = np.zeros((32,32), dtype=np.complex128)
+    for i in range(32):
+        tmp = L(setup, Pair.singleEntry(i))
+        for j in range(32):
+            LM[i,j] = tmp[j]
+    return LM
+
+def LMatrixOffdiagonal(setup):
+    #A matrix of the linear map of L, acting on the subspace
+    # of the offdiagonal matrices \delta \rho
+    LOff = np.zeros((16,16), dtype=np.complex128)
+    for i in range(16):
+        tmp = L(setup, Pair.singleEntry(i))
+        for j in range(16):
+            LOff[i,j] = tmp[j]
+    return LOff
+
+# Returns max Re(k/\omega_{vac})
+def KMax(setup):
+    return BiggestRealEigPart(LMatrixOffdiagonal(setup))
+
+class Stability:
+    """ And finally the class containing different stability diagrams """
+    def __init__(self, dir):
+        self.rhoInit = np.diag([0.5, 0.1, 0.3, 0.1])
+        self.dir = dir
+
+    def MuQ(self, mulims, qlims, eta, gPlus, Nmu=100, Nq=100, filetitle="MuQ"):
+        Grid = np.zeros((Nq,Nmu))
+        mus = list(np.linspace(mulims[0], mulims[1], Nmu))
+        qs  = list(np.linspace(qlims[0], qlims[1], Nq))
+        
+        for iq,q in enumerate(qs):
+            print(f"Evaluating {q=:.2f} in the range ({qlims[0],qlims[1]}), {iq}/{Nq} points")
+            for imu,mu in enumerate(mus):
+                setup = Setup(eta=eta,q=q,mu=mu,gPlus=gPlus,chi=15.0,rhoInit=self.rhoInit)
+                Grid[iq,imu] = KMax(setup)
+
+        PlotStability(mus, mulims, r"$\mu/\omega$",
+                      qs, qlims, r"$q/\omega$",
+                      Grid, f"{self.dir}/{filetitle}.eps")
+
+if __name__ == "__main__":
+    stab = Stability(dir="./build/StabilityPlots")
+    stab.MuQ(mulims=(0,50), qlims=(0,100), eta=-1.0, gPlus=1.0, Nmu=1000, Nq=1000, filetitle="MuQ_IH")
+    stab.MuQ(mulims=(0,50), qlims=(0,100), eta=1.0, gPlus=1.0, Nmu=1000, Nq=1000, filetitle="MuQ_NH")

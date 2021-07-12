@@ -5,7 +5,7 @@ import unittest, sys
 import numpy as np
 
 sys.path.append("..")
-from Stability import Pair, indexMapper, maskLeft, maskRight
+from Stability import Pair, indexMapper, maskLeft, maskRight, LMatrix, Setup
 
 class TestStability(unittest.TestCase):
 
@@ -83,6 +83,20 @@ class TestStability(unittest.TestCase):
                         self.assertEqual(pairRight[maskRight[a,b]], m[a,b])
                         self.assertEqual(pairLeft[maskRight[a,b]], 0.0)
                         self.assertEqual(pairRight[maskLeft[a,b]], 0.0)
+
+    def test_LMatrix(self):
+        rhoInit = np.diag([0.5, 0.1, 0.3, 0.1])
+        for q in np.linspace(0, 70, 10):
+            for mu in np.linspace(0, 50, 10):
+                for gPlus in np.linspace(0, 1.0, 10):
+                    setup = Setup(eta=-1.0,q=q,mu=mu,gPlus=gPlus,chi=15.0,rhoInit=rhoInit)
+                    M = LMatrix(setup)
+                    # Check whether diagonal and offdiagonal components decouple from each other
+                    # so the matrix is basically block-diagonal (with blocks 16x16)
+                    for i in range(16):
+                        for j in range(16,32):
+                            self.assertEqual(M[i,j], 0.0)
+                            self.assertEqual(M[j,i], 0.0)
 
 if __name__ == "__main__":
     unittest.main()
