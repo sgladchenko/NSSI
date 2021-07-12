@@ -4,6 +4,7 @@ import numpy as np
 from copy import deepcopy
 from Lambdas import su4Diag, su4Offdiag, su4Round, com, BiggestRealEigPart, flavourSigma3, G
 from Modules import PlotStability
+from Elapsed import elapsed
 
 # In all the further fomulae zeta=+1 corresponds to the 'left' beam
 # and zeta=-1 to the 'right' one; the matrices will be packed as (left,right)
@@ -147,13 +148,14 @@ class Stability:
         self.rhoInit = np.diag([0.5, 0.1, 0.3, 0.1])
         self.dir = dir
 
+    @elapsed
     def MuQ(self, mulims, qlims, eta, gPlus, Nmu=100, Nq=100, filetitle="MuQ"):
         Grid = np.zeros((Nq,Nmu))
         mus = list(np.linspace(mulims[0], mulims[1], Nmu))
         qs  = list(np.linspace(qlims[0], qlims[1], Nq))
         
         for iq,q in enumerate(qs):
-            print(f"Evaluating {q=:.2f} in the range ({qlims[0],qlims[1]}), {iq}/{Nq} points")
+            print(f"Evaluating {q=:.2f} in the range ({qlims[0]},{qlims[1]}), {iq}/{Nq} points")
             for imu,mu in enumerate(mus):
                 setup = Setup(eta=eta,q=q,mu=mu,gPlus=gPlus,chi=15.0,rhoInit=self.rhoInit)
                 Grid[iq,imu] = KMax(setup)

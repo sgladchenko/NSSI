@@ -19,6 +19,8 @@ colour_ax = "#7F00FF"
 colour_NB = "#050505"
 colours  = colour_e, colour_x, colour_ae, colour_ax, colour_NB
 viridis  = cm.get_cmap('viridis')
+seismic  = cm.get_cmap('seismic')
+coolwarm = cm.get_cmap('coolwarm')
 MainFontSize = 12
 
 # Some customisation of matplotlib
@@ -286,19 +288,6 @@ def PlotStability(xs, xlims, xlabel, ys, ylims, ylabel, zs, fileplot, fmt="eps",
     xArray, yArray = np.meshgrid(xs, ys)
     zArray = np.array(zs)
 
-    """
-    points = []; values = []
-    for ix,x in enumerate(xs):
-        for iy,y in enumerate(ys):
-            points.append([x,y])
-            values.append(zs[iy][ix])
-
-    xArray = np.linspace(xlims[0], xlims[1], 1000)
-    yArray = np.linspace(ylims[0], ylims[1], 1000)
-    xArray, yArray = np.meshgrid(xArray, yArray)
-    zArray = griddata(points, values, (xArray,yArray), method="cubic")
-    """
-
-    plot = axs.pcolor(xArray, yArray, zArray, cmap=cm.get_cmap("inferno"), rasterized=True)
+    plot = axs.pcolor(xArray, yArray, zArray, cmap=cm.get_cmap('cividis'), rasterized=True)
     fig.colorbar(plot)
     fig.savefig(fileplot, fmt=fmt, bbox_inches='tight')
