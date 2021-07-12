@@ -1,0 +1,69 @@
+Compiler = g++ --std=c++17 -fopenmp -O3 -fno-use-linker-plugin -D __DONT_USE_STD_FILESYSTEM__
+CLIBS    = -lstdc++fs
+		 
+srcroot  = ./src.cpp/
+Sources  = $(srcroot)source/
+Tests    = $(srcroot)tests/
+Headers  = -I "$(srcroot)" -I "$(srcroot)Eigen/" -I "$(srcroot)JSON/single_include/"
+
+# The main part
+
+Main:
+	$(Compiler) $(Headers) -o nssi "$(Sources)Main.cpp" \
+								   "$(Sources)su4.cpp" \
+								   "$(Sources)Vector.cpp" \
+								   "$(Sources)Containers.cpp" \
+								   "$(Sources)Constants.cpp" \
+								   "$(Sources)Files.cpp" \
+								   "$(Sources)Functions.cpp" \
+								   "$(Sources)Hamiltonians.cpp" \
+								   "$(Sources)Noise.cpp" \
+								   "$(Sources)Scheme.cpp" \
+								   "$(Sources)RegEigenvalues.cpp" \
+								   $(CLIBS)
+
+# Test section
+
+TestConstants:
+	$(Compiler) $(Headers) -o test "$(Tests)TestConstants.cpp" \
+								   "$(Sources)Constants.cpp" \
+								   "$(Sources)su4.cpp" \
+								   "$(Sources)Vector.cpp" \
+								   $(CLIBS)
+
+TestVector:
+	$(Compiler) $(Headers) -o test "$(Tests)TestVector.cpp" \
+								   "$(Sources)su4.cpp" \
+								   "$(Sources)Vector.cpp" \
+								   $(CLIBS)
+
+Testsu4:
+	$(Compiler) $(Headers) -o test "$(Tests)Testsu4.cpp" \
+								   "$(Sources)su4.cpp" \
+								   "$(Sources)Vector.cpp" \
+								   $(CLIBS)
+
+TestContainers:
+	$(Compiler) $(Headers) -o test "$(Tests)TestContainers.cpp" \
+								   "$(Sources)su4.cpp" \
+								   "$(Sources)Vector.cpp" \
+								   "$(Sources)Containers.cpp" \
+								   $(CLIBS)
+
+TestFiles:
+	$(Compiler) $(Headers) -o test "$(Tests)TestFiles.cpp" \
+								   "$(Sources)Files.cpp" \
+								   $(CLIBS)
+
+TestReg:
+	$(Compiler) $(Headers) -o test "$(Tests)TestReg.cpp" \
+								   "$(Sources)su4.cpp" \
+								   "$(Sources)RegEigenvalues.cpp" \
+								   "$(Sources)Vector.cpp" \
+								   "$(Sources)Functions.cpp" \
+								   "$(Sources)Hamiltonians.cpp" \
+								   "$(Sources)Containers.cpp" \
+								   $(CLIBS)
+
+TestRegShort:
+	$(Compiler) $(Headers) -o test "$(Tests)TestReg.cpp" $(CLIBS)
