@@ -160,11 +160,39 @@ class Stability:
                 setup = Setup(eta=eta,q=q,mu=mu,gPlus=gPlus,chi=15.0,rhoInit=self.rhoInit)
                 Grid[iq,imu] = KMax(setup)
 
+        hrchy = "NH" if eta == 1.0 else "IH"
+
         PlotStability(mus, mulims, r"$\mu/\omega$",
                       qs, qlims, r"$q/\omega$",
-                      Grid, f"{self.dir}/{filetitle}.eps")
+                      Grid, f"{self.dir}/{filetitle}.eps",
+                      hrchy)
+
+    @elapsed
+    def gPlusQ(self, gPluslims, qlims, eta, mu, NgPlus=100, Nq=100, filetitle="gPlusQ"):
+        Grid = np.zeros((Nq,NgPlus))
+        gPluses = list(np.linspace(gPluslims[0], gPluslims[1], NgPlus))
+        qs  = list(np.linspace(qlims[0], qlims[1], Nq))
+        
+        for iq,q in enumerate(qs):
+            print(f"Evaluating {q=:.2f} in the range ({qlims[0]},{qlims[1]}), {iq}/{Nq} points")
+            for igPlus,gPlus in enumerate(gPluses):
+                setup = Setup(eta=eta,q=q,mu=mu,gPlus=gPlus,chi=15.0,rhoInit=self.rhoInit)
+                Grid[iq,igPlus] = KMax(setup)
+
+        hrchy = "NH" if eta == 1.0 else "IH"
+
+        PlotStability(gPluses, gPluslims, r"$g_{+}$",
+                      qs, qlims, r"$q/\omega$",
+                      Grid, f"{self.dir}/{filetitle}.eps",
+                      hrchy)
 
 if __name__ == "__main__":
     stab = Stability(dir="./build/StabilityPlots")
-    stab.MuQ(mulims=(0,50), qlims=(0,100), eta=-1.0, gPlus=1.0, Nmu=1000, Nq=1000, filetitle="MuQ_IH")
-    stab.MuQ(mulims=(0,50), qlims=(0,100), eta=1.0, gPlus=1.0, Nmu=1000, Nq=1000, filetitle="MuQ_NH")
+
+    N = 500
+
+    stab.MuQ(mulims=(0,50), qlims=(0,100), eta=1.0,  gPlus=1.0, Nmu=N, Nq=N, filetitle="MuQ_NH")
+    stab.MuQ(mulims=(0,50), qlims=(0,100), eta=-1.0, gPlus=1.0, Nmu=N, Nq=N, filetitle="MuQ_IH")
+
+    stab.gPlusQ(gPluslims=(0,1.0), qlims=(0,100), eta=1.0,  mu=20.0, NgPlus=N, Nq=N, filetitle="gPlusQ_NH")
+    stab.gPlusQ(gPluslims=(0,1.0), qlims=(0,100), eta=-1.0, mu=20.0, NgPlus=N, Nq=N, filetitle="gPlusQ_IH")

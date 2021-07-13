@@ -9,7 +9,8 @@ from scipy.interpolate import griddata
 import sys
 
 # Default values of the dimensions of the plots
-defaultDims = (6, 4.5)
+# these dimensions are accepted in the PhysRevD journal
+defaultDims = (3.375, 2.8)
 
 # Colours and other constants
 colour_e = "#FF0000"
@@ -21,13 +22,14 @@ colours  = colour_e, colour_x, colour_ae, colour_ax, colour_NB
 viridis  = cm.get_cmap('viridis')
 seismic  = cm.get_cmap('seismic')
 coolwarm = cm.get_cmap('coolwarm')
-MainFontSize = 12
+MainFontSize = 9
 
 # Some customisation of matplotlib
 ticker.rcParams['xtick.direction'] = 'in'
 ticker.rcParams['ytick.direction'] = 'in'
 ticker.rcParams['xtick.labelsize'] = MainFontSize
 ticker.rcParams['ytick.labelsize'] = MainFontSize
+
 mpl.rcParams['font.family'] = ['serif']
 mpl.rcParams['font.serif']  = ['Times New Roman'] # Computer Modern Roman
 mpl.rcParams['legend.handlelength'] = 2
@@ -275,7 +277,7 @@ def PlotSurface(xs, xlims, ys, ylims, zs, zlims, flav, fileplot, fmt="eps", dims
     fig.colorbar(plot)
     fig.savefig(fileplot, fmt=fmt, bbox_inches='tight')
 
-def PlotStability(xs, xlims, xlabel, ys, ylims, ylabel, zs, fileplot, fmt="eps", dims=defaultDims):
+def PlotStability(xs, xlims, xlabel, ys, ylims, ylabel, zs, fileplot, hrchy, fmt="eps", dims=defaultDims):
     fig = Figure(figsize=dims)
     FigureCanvas(fig)
 
@@ -284,10 +286,16 @@ def PlotStability(xs, xlims, xlabel, ys, ylims, ylabel, zs, fileplot, fmt="eps",
     axs.set_ylabel(ylabel, fontsize=MainFontSize)
     axs.set_xlim(xlims)
     axs.set_ylim(ylims)
+    axs.set_aspect("auto")
+
+    xhrchy = 0.02*xlims[1]
+    yhrchy = 0.94*ylims[1]
+    axs.text(xhrchy, yhrchy, hrchy, color="white")
 
     xArray, yArray = np.meshgrid(xs, ys)
     zArray = np.array(zs)
 
     plot = axs.pcolor(xArray, yArray, zArray, cmap=cm.get_cmap('cividis'), rasterized=True)
-    fig.colorbar(plot)
-    fig.savefig(fileplot, fmt=fmt, bbox_inches='tight')
+    cb = fig.colorbar(plot)
+    cb.ax.set_title(r"$\kappa_{\mathrm{max}} / \omega$", fontsize=MainFontSize)
+    fig.savefig(fileplot, fmt=fmt, bbox_inches='tight', dpi=192)
