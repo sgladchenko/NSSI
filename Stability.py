@@ -186,13 +186,43 @@ class Stability:
                       Grid, f"{self.dir}/{filetitle}.eps",
                       hrchy)
 
-if __name__ == "__main__":
-    stab = Stability(dir="./build/StabilityPlots")
-
-    N = 500
+# Draw the basic stability diagrams used in the article
+def StabilityDiagrams(N, dir):
+    stab = Stability(dir=dir)
 
     stab.MuQ(mulims=(0,50), qlims=(0,100), eta=1.0,  gPlus=1.0, Nmu=N, Nq=N, filetitle="MuQ_NH")
     stab.MuQ(mulims=(0,50), qlims=(0,100), eta=-1.0, gPlus=1.0, Nmu=N, Nq=N, filetitle="MuQ_IH")
 
     stab.gPlusQ(gPluslims=(0,1.0), qlims=(0,100), eta=1.0,  mu=20.0, NgPlus=N, Nq=N, filetitle="gPlusQ_NH")
     stab.gPlusQ(gPluslims=(0,1.0), qlims=(0,100), eta=-1.0, mu=20.0, NgPlus=N, Nq=N, filetitle="gPlusQ_IH")
+
+# Save particular matrix elements of the operator used to conduct the stability analysis
+def SaveL(eta, q, mu, gPlus, fileout):
+    setup = Setup(eta=eta, q=q, mu=mu, gPlus=gPlus, chi=15.0, rhoInit=np.diag([0.5, 0.1, 0.3, 0.1]))
+
+    # Cook this matrix
+    Matrix = np.abs(LMatrixOffdiagonal(setup))
+
+    # Permutation of the indices + formatting
+    indices = [0, 1, 10, 11, 2, 3, 8, 9, 4, 5, 6, 7, 12, 13, 14, 15]
+    TextMatrix = [[f"{Matrix[i,j]:6.2f}" for j in indices] for i in indices]
+
+    # A simple function constructing a line with a separator between the blocks
+    def line(arr):
+        return " ".join(arr[:8]) + "  " + " ".join(arr[8:16]) + "\n"
+    
+    with open(fileout, "w") as f:
+        # Write the matrix by its blocks 8x8
+
+        # Top blocks
+        for i in range(8): f.write(line(TextMatrix[i]))
+
+        # Separator beetween the top and the bottom blocks
+        f.write("\n")
+
+        # Bottom blocks
+        for i in range(8,16): f.write(line(TextMatrix[i]))
+
+if __name__ == "__main__":
+    StabilityDiagrams(N=500, dir="./build/StabilityPlots")
+    SaveL(eta=-1.0, q=50, mu=25.0, gPlus=1.0, fileout="./build/StabilityPlots/LOffdiagonal.txt")
