@@ -202,7 +202,6 @@ def SaveL(eta, q, mu, gPlus, fileout):
 
     # Cook this matrix
     Matrix = np.abs(LMatrixOffdiagonal(setup))
-
     # Permutation of the indices + formatting
     indices = [0, 1, 10, 11, 2, 3, 8, 9, 4, 5, 6, 7, 12, 13, 14, 15]
     TextMatrix = [[f"{Matrix[i,j]:6.2f}" for j in indices] for i in indices]
@@ -213,16 +212,13 @@ def SaveL(eta, q, mu, gPlus, fileout):
     
     with open(fileout, "w") as f:
         # Write the matrix by its blocks 8x8
-
         # Top blocks
         for i in range(8): f.write(line(TextMatrix[i]))
-
         # Separator beetween the top and the bottom blocks
         f.write("\n")
-
         # Bottom blocks
         for i in range(8,16): f.write(line(TextMatrix[i]))
 
 if __name__ == "__main__":
-    StabilityDiagrams(N=500, dir="./build/StabilityPlots")
-    SaveL(eta=-1.0, q=50, mu=25.0, gPlus=1.0, fileout="./build/StabilityPlots/LOffdiagonal.txt")
+    StabilityDiagrams(N=500, dir="build/StabilityPlots")
+    SaveL(eta=-1.0, q=50, mu=25.0, gPlus=1.0, fileout="build/StabilityPlots/LOffdiagonal.txt")
