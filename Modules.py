@@ -6,7 +6,7 @@ import matplotlib as mpl
 import numpy as np
 from scipy.interpolate import griddata
 
-import sys
+import sys, warnings
 
 # Default values of the dimensions of the plots
 # these dimensions are accepted in the PhysRevD journal
@@ -188,6 +188,9 @@ def FourPlots1D(zCoordinates, values, filePlot, labels, title=None, fmt="png", m
 
 # Obtain the full data
 def Data(dir, D_x, D_z, pX, pZ):
+    warnings.warn("The usage of this function is depricted due to inefficiency. Use Data.Data instances instead.",
+                  DeprecationWarning)
+
     # Then let's read the data; obtain the binaries
     LData  = np.fromfile(dir + "bin/left.bin",  dtype=np.float64)
     RData  = np.fromfile(dir + "bin/right.bin", dtype=np.float64)

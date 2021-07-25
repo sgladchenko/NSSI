@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 
 import numpy as np
-import os, json
+import os, json, struct
 import warnings
+
+# The size of the types used for operating over the
+# floating point numbers (in bytes)
+SIZE_FLOAT = 8
 
 class Data:
     """ Reading dumps of the calculated setups """
@@ -29,11 +33,11 @@ class Data:
             raise FileNotFoundError(f"No 'ZGrid.txt' file found at {self.folder}")
 
         # Main buffer containing the probabilities from the binary files
-        self.Solutions = [[] for i in range(8)]
+        self.Probabilities = [[] for i in range(8)]
         self.loadedBin = False
 
         # Buffer containing (evaluated) average probabilities
-        self.Averages = []
+        self.Averages = [None for i in range(8)]
         self.evaluatedAverages = False
 
         # First step is to obtain the dimensions of the saved grids
@@ -80,10 +84,40 @@ class Data:
 
     # Access to the solution grids of probabilities
     def __getitem__(self, i):
-        return self.Solutions[i]
+        return self.Probabilities[i]
 
+    # Load the data contained in the binaries left.bin and right.bin
     def LoadBin(self):
+        # Here we are going to directly save only the needed entries from the binaries
+        fl = open(f"{self.folder}/bin/left.bin", "rb")
+        fr = open(f"{self.folder}/bin/right.bin", "rb")
+
+        # Firsly, let's initialize the empty matrices
+        for i in range(8):
+            self.Probabilities[i] = np.empty((self.N_z_displayed, self.N_x_displayed), np.float64)
+
+        # Offset from the beginning of each file where the desired entries are saved
+        def offset(iz_displayed, ix_displayed):
+            return ((iz_displayed*self.periodN_z)*self.Length_x_bin + ix_displayed*self.periodN_x)*4*SIZE_FLOAT
+
+        # And then let's pick out exactly the desired values
+        for iz in range(self.N_z_displayed):
+            for ix in range(self.N_x_displayed):
+                # Move to the needed entry
+                fl.seek(offset(iz, ix))
+                fr.seek(offset(iz, ix))
+                # Read at each file 4 floats containing the probabilities of each of the
+                # 4 floavours (in total: 8 floats) and let's unpack then simultaneously
+                probsl = struct.unpack("dddd", fl.read(4*SIZE_FLOAT))
+                probsr = struct.unpack("dddd", fr.read(4*SIZE_FLOAT))
+                probs = probsl + probsr
+                # And finally, let's save them in the matrices
+                for i in range(8):
+                    self.Probabilities[i][iz,ix] = probs[i]
         
+        fl.close()
+        fr.close()
+
         # Toggle the flag that the binaries are loaded at this instance
         self.loadedBin = True
 
@@ -94,7 +128,7 @@ class Data:
             raise RuntimeError(f"The binary data haven't been read yet")
 
         # Evaluate the averages
-        self.Averages = [[sum(line)/len(line) for line in sol] for sol in self.Solutions]
+        self.Averages = [[sum(line)/len(line) for line in sol] for sol in self.Probabilities]
 
         # And toggle the flag that the average probabilities have been evaluated
         self.evaluatedAverages = True
@@ -125,7 +159,7 @@ class Data:
         with open(f"{averagesfolder}/avsR.json", "w") as f:
             json.dump({"ZGridRare": self.ZGrid_displayed, "avs": self.Averages[4:]}, f, indent=4)
 
-    # Just load the average probabilitites withou their evaluating
+    # Just load the average probabilitites without their evaluating
     @staticmethod
     def LoadAverages(folder):
         pass
