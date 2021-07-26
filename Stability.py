@@ -225,43 +225,43 @@ def MyFancyArrayToString(nparray, permutate=True):
 
     return finalstring
 
-# The direct formula of the matrix of the linear map standing amidst the linear stability analysis
+# The direct formula of the matrix of the linear map standing in the linear stability analysis
 def LMatrixOffdiagonal_Direct(setup):
     # First, let's evaluate some additional constants
-    delta = setup.q*setup.tan
+    delta = -setup.q*setup.tan
     alphaPlus  = delta + setup.eta/setup.cos
     alphaMinus = delta - setup.eta/setup.cos
     mub = setup.mu / setup.cos
     gPlus = setup.gPlus
 
     # Some functions of the probabilities
-    De = setup.rhoInit[0,0] - setup.rhoInit[2,2]
-    Dx = setup.rhoInit[1,1] - setup.rhoInit[3,3]
     se = setup.rhoInit[0,0]; sx = setup.rhoInit[1,1]; seb = setup.rhoInit[2,2]; sxb = setup.rhoInit[3,3]
+    De = se - seb
+    Dx = sx - sxb
     Offex = mub*gPlus*(se - sxb)
     Offxe = mub*gPlus*(sx - seb)
     Diag  = mub*(De + Dx)
 
     # Then, let's define the blocks 4x4
-    L_A = np.array([[-alphaPlus+3.0*Diag,  0.0,                   Offex,              -Offex             ],
-                    [ 0.0,                -alphaMinus+3.0*Diag,  -Offxe,               Offxe             ],
-                    [-Offxe,               Offxe,                 alphaMinus-3.0*Diag, 0.0               ],
-                    [ Offex,              -Offex,                 0.0,                 alphaPlus-3.0*Diag]])
+    L_A = np.array([[ alphaMinus+3.0*Diag, 0.0,                   Offex,              -Offex              ],
+                    [ 0.0,                 alphaPlus+3.0*Diag,   -Offxe,               Offxe              ],
+                    [-Offxe,               Offxe,                -alphaPlus-3.0*Diag, 0.0                 ],
+                    [ Offex,              -Offex,                 0.0,                -alphaMinus-3.0*Diag]])
 
-    L_B = np.array([[-alphaPlus-3.0*Diag,  0.0,                  -Offxe,               Offxe             ],
-                    [ 0.0,                -alphaMinus-3.0*Diag,   Offex,              -Offex             ],
-                    [ Offex,              -Offex,                 alphaMinus+3.0*Diag, 0.0               ],
-                    [-Offxe,               Offxe,                 0.0,                 alphaPlus+3.0*Diag]])
+    L_B = np.array([[ alphaMinus-3.0*Diag, 0.0,                  -Offxe,               Offxe              ],
+                    [ 0.0,                 alphaPlus-3.0*Diag,   Offex,               -Offex              ],
+                    [ Offex,              -Offex,                -alphaPlus+3.0*Diag,  0.0                ],
+                    [-Offxe,               Offxe,                 0.0,                -alphaMinus+3.0*Diag]])
 
-    L_C = np.diag([-delta + 2.0*mub*(2.0*De + Dx),
+    L_C = np.diag([ delta + 2.0*mub*(2.0*De + Dx),
+                    delta + 2.0*mub*(De + 2.0*Dx),
+                    delta - 2.0*mub*(2.0*De + Dx),
+                    delta - 2.0*mub*(De + 2.0*Dx)])
+
+    L_D = np.diag([-delta + 2.0*mub*(2.0*De + Dx),
                    -delta + 2.0*mub*(De + 2.0*Dx),
                    -delta - 2.0*mub*(2.0*De + Dx),
                    -delta - 2.0*mub*(De + 2.0*Dx)])
-
-    L_D = np.diag([delta + 2.0*mub*(2.0*De + Dx),
-                   delta + 2.0*mub*(De + 2.0*Dx),
-                   delta - 2.0*mub*(2.0*De + Dx),
-                   delta - 2.0*mub*(De + 2.0*Dx)])
 
     # And the final matrix
     zeros = np.zeros((4,4), dtype=np.float64)

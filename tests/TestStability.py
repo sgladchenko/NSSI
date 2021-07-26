@@ -95,8 +95,6 @@ class TestStability(unittest.TestCase):
                     setup = Setup(eta=1.0,q=q,mu=mu,gPlus=gPlus,chi=15.0,rhoInit=rhoInit)
                     N = np.real(LMatrixOffdiagonal(setup)*1.0j)
                     D = LMatrixOffdiagonal_Direct(setup)
-                    # Check whether diagonal and offdiagonal components decouple from each other
-                    # so the matrix is basically block-diagonal (with blocks 16x16)
                     for i in range(16):
                         for j in range(16):
                             self.assertAlmostEqual(N[pmt(i),pmt(j)], D[i,j], 13, msg=f"{q=},{mu=},{gPlus=},{i=},{j=}")
@@ -108,8 +106,6 @@ class TestStability(unittest.TestCase):
                     setup = Setup(eta=-1.0,q=q,mu=mu,gPlus=gPlus,chi=15.0,rhoInit=rhoInit)
                     N = np.real(LMatrixOffdiagonal(setup)*1.0j)
                     D = LMatrixOffdiagonal_Direct(setup)
-                    # Check whether diagonal and offdiagonal components decouple from each other
-                    # so the matrix is basically block-diagonal (with blocks 16x16)
                     for i in range(16):
                         for j in range(16):
                             self.assertAlmostEqual(N[pmt(i),pmt(j)], D[i,j], 13, msg=f"{q=},{mu=},{gPlus=},{i=},{j=}")
@@ -124,8 +120,6 @@ class TestStability(unittest.TestCase):
                     setup = Setup(eta=1.0,q=q,mu=mu,gPlus=gPlus,chi=15.0,rhoInit=rhoInit)
                     N = np.real(LMatrixOffdiagonal(setup)*1.0j)
                     D = LMatrixOffdiagonal_Direct(setup)
-                    # Check whether diagonal and offdiagonal components decouple from each other
-                    # so the matrix is basically block-diagonal (with blocks 16x16)
                     for i in range(16):
                         for j in range(16):
                             self.assertAlmostEqual(N[pmt(i),pmt(j)], D[i,j], 13, msg=f"{q=},{mu=},{gPlus=},{i=},{j=}")
@@ -137,8 +131,6 @@ class TestStability(unittest.TestCase):
                     setup = Setup(eta=-1.0,q=q,mu=mu,gPlus=gPlus,chi=15.0,rhoInit=rhoInit)
                     N = np.real(LMatrixOffdiagonal(setup)*1.0j)
                     D = LMatrixOffdiagonal_Direct(setup)
-                    # Check whether diagonal and offdiagonal components decouple from each other
-                    # so the matrix is basically block-diagonal (with blocks 16x16)
                     for i in range(16):
                         for j in range(16):
                             self.assertAlmostEqual(N[pmt(i),pmt(j)], D[i,j], 13, msg=f"{q=},{mu=},{gPlus=},{i=},{j=}")
