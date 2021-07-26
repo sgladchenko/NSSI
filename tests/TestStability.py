@@ -6,6 +6,7 @@ import numpy as np
 
 sys.path.append("..")
 from Stability import Pair, indexMapper, maskLeft, maskRight, LMatrix, Setup
+from Stability import LMatrixOffdiagonal, LMatrixOffdiagonal_Direct, MyFancyArrayToString, pmt
 
 class TestStability(unittest.TestCase):
 
@@ -83,20 +84,64 @@ class TestStability(unittest.TestCase):
                         self.assertEqual(pairRight[maskRight[a,b]], m[a,b])
                         self.assertEqual(pairLeft[maskRight[a,b]], 0.0)
                         self.assertEqual(pairRight[maskLeft[a,b]], 0.0)
-
-    def test_LMatrix(self):
+    
+    def test_LDirect(self):
         rhoInit = np.diag([0.5, 0.1, 0.3, 0.1])
-        for q in np.linspace(0, 70, 10):
-            for mu in np.linspace(0, 50, 10):
-                for gPlus in np.linspace(0, 1.0, 10):
-                    setup = Setup(eta=-1.0,q=q,mu=mu,gPlus=gPlus,chi=15.0,rhoInit=rhoInit)
-                    M = LMatrix(setup)
+
+        # Normal hierarchy  
+        for q in np.linspace(0.0, 70.0, 10):
+            for mu in np.linspace(0.0, 50.0, 10):
+                for gPlus in np.linspace(0.0, 1.0, 10):
+                    setup = Setup(eta=1.0,q=q,mu=mu,gPlus=gPlus,chi=15.0,rhoInit=rhoInit)
+                    N = np.real(LMatrixOffdiagonal(setup)*1.0j)
+                    D = LMatrixOffdiagonal_Direct(setup)
                     # Check whether diagonal and offdiagonal components decouple from each other
                     # so the matrix is basically block-diagonal (with blocks 16x16)
                     for i in range(16):
-                        for j in range(16,32):
-                            self.assertEqual(M[i,j], 0.0)
-                            self.assertEqual(M[j,i], 0.0)
+                        for j in range(16):
+                            self.assertAlmostEqual(N[pmt(i),pmt(j)], D[i,j], 13, msg=f"{q=},{mu=},{gPlus=},{i=},{j=}")
+
+        # Inverted hierarchy
+        for q in np.linspace(0.0, 70.0, 10):
+            for mu in np.linspace(0.0, 50.0, 10):
+                for gPlus in np.linspace(0.0, 1.0, 10):
+                    setup = Setup(eta=-1.0,q=q,mu=mu,gPlus=gPlus,chi=15.0,rhoInit=rhoInit)
+                    N = np.real(LMatrixOffdiagonal(setup)*1.0j)
+                    D = LMatrixOffdiagonal_Direct(setup)
+                    # Check whether diagonal and offdiagonal components decouple from each other
+                    # so the matrix is basically block-diagonal (with blocks 16x16)
+                    for i in range(16):
+                        for j in range(16):
+                            self.assertAlmostEqual(N[pmt(i),pmt(j)], D[i,j], 13, msg=f"{q=},{mu=},{gPlus=},{i=},{j=}")
+
+        # And for another choice of the initial unperturbed density matrcies
+        rhoInit = np.diag([0.5, 0.0, 0.5, 0.0])
+
+        # Normal hierarchy
+        for q in np.linspace(0.0, 70.0, 10):
+            for mu in np.linspace(0.0, 50.0, 10):
+                for gPlus in np.linspace(0.0, 1.0, 10):
+                    setup = Setup(eta=1.0,q=q,mu=mu,gPlus=gPlus,chi=15.0,rhoInit=rhoInit)
+                    N = np.real(LMatrixOffdiagonal(setup)*1.0j)
+                    D = LMatrixOffdiagonal_Direct(setup)
+                    # Check whether diagonal and offdiagonal components decouple from each other
+                    # so the matrix is basically block-diagonal (with blocks 16x16)
+                    for i in range(16):
+                        for j in range(16):
+                            self.assertAlmostEqual(N[pmt(i),pmt(j)], D[i,j], 13, msg=f"{q=},{mu=},{gPlus=},{i=},{j=}")
+
+        # Inverted hierarchy
+        for q in np.linspace(0.0, 70.0, 10):
+            for mu in np.linspace(0.0, 50.0, 10):
+                for gPlus in np.linspace(0.0, 1.0, 10):
+                    setup = Setup(eta=-1.0,q=q,mu=mu,gPlus=gPlus,chi=15.0,rhoInit=rhoInit)
+                    N = np.real(LMatrixOffdiagonal(setup)*1.0j)
+                    D = LMatrixOffdiagonal_Direct(setup)
+                    # Check whether diagonal and offdiagonal components decouple from each other
+                    # so the matrix is basically block-diagonal (with blocks 16x16)
+                    for i in range(16):
+                        for j in range(16):
+                            self.assertAlmostEqual(N[pmt(i),pmt(j)], D[i,j], 13, msg=f"{q=},{mu=},{gPlus=},{i=},{j=}")
 
 if __name__ == "__main__":
     unittest.main()

@@ -27,6 +27,10 @@ maskRight = np.array([[24, 28, 12, 8 ],
                       [14, 10, 26, 30],
                       [11, 15, 31, 27]])
 
+# Permutator of the indices
+inds = [0, 1, 10, 11, 2, 3, 8, 9, 4, 5, 6, 7, 12, 13, 14, 15]
+pmt = lambda i: inds[i]
+
 class Pair:
     def __init__(self, left, right):
         self.pair = [deepcopy(left), deepcopy(right)]
@@ -125,7 +129,7 @@ def LMatrix(setup):
     for i in range(32):
         tmp = L(setup, Pair.singleEntry(i))
         for j in range(32):
-            LM[i,j] = tmp[j]
+            LM[j,i] = tmp[j]
     return LM
 
 def LMatrixOffdiagonal(setup):
@@ -135,7 +139,7 @@ def LMatrixOffdiagonal(setup):
     for i in range(16):
         tmp = L(setup, Pair.singleEntry(i))
         for j in range(16):
-            LOff[i,j] = tmp[j]
+            LOff[j,i] = tmp[j]
     return LOff
 
 # Returns max Re(k/\omega_{vac})
@@ -196,29 +200,169 @@ def StabilityDiagrams(N, dir):
     stab.gPlusQ(gPluslims=(0,1.0), qlims=(0,100), eta=1.0,  mu=20.0, NgPlus=N, Nq=N, filetitle="gPlusQ_NH")
     stab.gPlusQ(gPluslims=(0,1.0), qlims=(0,100), eta=-1.0, mu=20.0, NgPlus=N, Nq=N, filetitle="gPlusQ_IH")
 
-# Save particular matrix elements of the operator used to conduct the stability analysis
-def SaveL(eta, q, mu, gPlus, fileout):
-    setup = Setup(eta=eta, q=q, mu=mu, gPlus=gPlus, chi=15.0, rhoInit=np.diag([0.5, 0.1, 0.3, 0.1]))
-
-    # Cook this matrix
-    Matrix = np.abs(LMatrixOffdiagonal(setup))
-    # Permutation of the indices + formatting
+# A short function that casts 16x16 matrices to text changing the order of the indices
+# with some formatting
+def MyFancyArrayToString(nparray, permutate=True):
     indices = [0, 1, 10, 11, 2, 3, 8, 9, 4, 5, 6, 7, 12, 13, 14, 15]
-    TextMatrix = [[f"{Matrix[i,j]:6.2f}" for j in indices] for i in indices]
+    if permutate:
+        textarray = [[f"{nparray[i,j]:6.2f}" for j in indices] for i in indices]
+    else:
+        textarray = [[f"{nparray[i,j]:6.2f}" for j in range(16)] for i in range(16)]
+    
+    finalstring = ""
 
     # A simple function constructing a line with a separator between the blocks
     def line(arr):
         return " ".join(arr[:8]) + "  " + " ".join(arr[8:16]) + "\n"
     
+    # Write the matrix by its blocks 8x8
+    # Top blocks
+    for i in range(8): finalstring += line(textarray[i])
+    # Separator beetween the top and the bottom blocks
+    finalstring += "\n"
+    # Bottom blocks
+    for i in range(8,16): finalstring += line(textarray[i])
+
+    return finalstring
+
+# The direct formula of the matrix of the linear map standing amidst the linear stability analysis
+def LMatrixOffdiagonal_Direct(setup):
+    # First, let's evaluate some additional constants
+    delta = setup.q*setup.tan
+    alphaPlus  = delta + setup.eta/setup.cos
+    alphaMinus = delta - setup.eta/setup.cos
+    mub = setup.mu / setup.cos
+    gPlus = setup.gPlus
+
+    # Some functions of the probabilities
+    De = setup.rhoInit[0,0] - setup.rhoInit[2,2]
+    Dx = setup.rhoInit[1,1] - setup.rhoInit[3,3]
+    se = setup.rhoInit[0,0]; sx = setup.rhoInit[1,1]; seb = setup.rhoInit[2,2]; sxb = setup.rhoInit[3,3]
+    Offex = mub*gPlus*(se - sxb)
+    Offxe = mub*gPlus*(sx - seb)
+    Diag  = mub*(De + Dx)
+
+    # Then, let's define the blocks 4x4
+    L_A = np.array([[-alphaPlus+3.0*Diag,  0.0,                   Offex,              -Offex             ],
+                    [ 0.0,                -alphaMinus+3.0*Diag,  -Offxe,               Offxe             ],
+                    [-Offxe,               Offxe,                 alphaMinus-3.0*Diag, 0.0               ],
+                    [ Offex,              -Offex,                 0.0,                 alphaPlus-3.0*Diag]])
+
+    L_B = np.array([[-alphaPlus-3.0*Diag,  0.0,                  -Offxe,               Offxe             ],
+                    [ 0.0,                -alphaMinus-3.0*Diag,   Offex,              -Offex             ],
+                    [ Offex,              -Offex,                 alphaMinus+3.0*Diag, 0.0               ],
+                    [-Offxe,               Offxe,                 0.0,                 alphaPlus+3.0*Diag]])
+
+    L_C = np.diag([-delta + 2.0*mub*(2.0*De + Dx),
+                   -delta + 2.0*mub*(De + 2.0*Dx),
+                   -delta - 2.0*mub*(2.0*De + Dx),
+                   -delta - 2.0*mub*(De + 2.0*Dx)])
+
+    L_D = np.diag([delta + 2.0*mub*(2.0*De + Dx),
+                   delta + 2.0*mub*(De + 2.0*Dx),
+                   delta - 2.0*mub*(2.0*De + Dx),
+                   delta - 2.0*mub*(De + 2.0*Dx)])
+
+    # And the final matrix
+    zeros = np.zeros((4,4), dtype=np.float64)
+
+    return np.block([[L_A,   zeros, zeros, zeros],
+                     [zeros, L_B,   zeros, zeros],
+                     [zeros, zeros, L_C,   zeros],
+                     [zeros, zeros, zeros, L_D]])
+
+# Save particular matrix elements of the operator used to conduct the stability analysis
+def SaveL(eta, q, mu, gPlus, fileout):
+    setup = Setup(eta=eta, q=q, mu=mu, gPlus=gPlus, chi=15.0, rhoInit=np.diag([0.5, 0.1, 0.3, 0.1]))
+
+    # Cook this matrix
+    Matrix = np.real(LMatrixOffdiagonal(setup)*1.0j)
+    # Update: now we have a direct formula!
+    Direct_Matrix = LMatrixOffdiagonal_Direct(setup)
+    
+    # Save to the text file
     with open(fileout, "w") as f:
-        # Write the matrix by its blocks 8x8
-        # Top blocks
-        for i in range(8): f.write(line(TextMatrix[i]))
-        # Separator beetween the top and the bottom blocks
+        f.write("Numerically evaluated matrix elements:\n")
+        f.write(MyFancyArrayToString(Matrix))
+        f.write("\nAnd via the direct formula:\n")
+        f.write(MyFancyArrayToString(Direct_Matrix, permutate=False))
+
+# A function that writes parts of the matrix of the linear map L
+def PartsL(filename):
+    # Zeroth part: the derivative part
+    DerivativeMatrix = np.diag([1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0])
+
+    def CommutatorMap(matrix):
+        result = np.empty((16, 16), dtype=np.float64)
+        for i in range(16):
+            b = Pair.singleEntry(i)
+            tmp = Pair(com(matrix, b.left), com(matrix, b.right))
+            for j in range(16):
+                result[j,i] = tmp[j]
+        return result
+
+    # First part: the vacuum matrix
+    VacuumMatrix = CommutatorMap(flavourSigma3)
+
+    # Second part: first collective terms
+    # IIIA term:
+    IIIAMatrix = CommutatorMap(G)
+    # IIIB term:
+    IIIBMatrix = CommutatorMap(np.diag([1.0, 0.0, -1.0, 0.0]))
+    # IIIC term:
+    IIICMatrix = CommutatorMap(np.diag([0.0, 1.0, 0.0, -1.0]))
+
+    # The third part: second collective terms:
+    IVA = [np.empty((16,16), dtype=np.float64) for i in range(4)]
+    IVB = [np.empty((16,16), dtype=np.float64) for i in range(4)]
+
+    purefloavours = [np.diag([1.0, 0.0, 0.0, 0.0]),
+                     np.diag([0.0, 1.0, 0.0, 0.0]),
+                     np.diag([0.0, 0.0, 1.0, 0.0]),
+                     np.diag([0.0, 0.0, 0.0, 1.0])]
+
+    for i in range(16):
+        b = Pair.singleEntry(i)
+        # For each flavour
+        for f in range(4):
+            # A section
+            tmpA = Pair(com(np.trace(b.right@G)*G + su4Diag(su4Round(b.right)), purefloavours[f]),
+                        com(np.trace(b.left@G)*G + su4Diag(su4Round(b.left)), purefloavours[f]))
+            # B section
+            tmpB = Pair(com(su4Offdiag(su4Round(b.right)).T,purefloavours[f]),
+                        com(su4Offdiag(su4Round(b.left)).T, purefloavours[f]))
+            
+            # Save the components
+            for j in range(16):
+                IVA[f][j,i] = tmpA[j]
+                IVB[f][j,i] = tmpB[j]
+
+    # Finally, let's dump all of these matrices
+    with open(filename, "w") as f:
+        f.write("Derivative Part:\n")
+        f.write(MyFancyArrayToString(DerivativeMatrix))
         f.write("\n")
-        # Bottom blocks
-        for i in range(8,16): f.write(line(TextMatrix[i]))
+        f.write("Vacuum Part:\n")
+        f.write(MyFancyArrayToString(VacuumMatrix))
+
+        f.write("\n")
+        f.write("IIIA:\n")
+        f.write(MyFancyArrayToString(IIIAMatrix))
+        f.write("\n")
+        f.write("IIIB:\n")
+        f.write(MyFancyArrayToString(IIIBMatrix))
+        f.write("\n")
+        f.write("IIIC:\n")
+        f.write(MyFancyArrayToString(IIICMatrix))
+
+        for fl in range(4):
+            f.write("\n")
+            f.write(f"IVA[{fl}]:\n")
+            f.write(MyFancyArrayToString(IVA[fl]))
+            f.write(f"IVB[{fl}]:\n")
+            f.write(MyFancyArrayToString(IVB[fl]))
 
 if __name__ == "__main__":
-    StabilityDiagrams(N=500, dir="build/StabilityPlots")
-    SaveL(eta=-1.0, q=50, mu=25.0, gPlus=1.0, fileout="build/StabilityPlots/LOffdiagonal.txt")
+    #StabilityDiagrams(N=500, dir="build/StabilityPlots")
+    SaveL(eta=1.0, q=20.0, mu=25.0, gPlus=1.0, fileout="build/StabilityPlots/LOffdiagonal.txt")
+    #PartsL("build/StabilityPlots/PartsL.txt")
