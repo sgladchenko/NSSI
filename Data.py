@@ -170,10 +170,10 @@ class Data:
 
         # Save them in the JSON files
         with open(f"{averagesfolder}/avsL.json", "w") as f:
-            json.dump({"ZGridRare": self.ZGrid_displayed, "avs": self.Averages[:4]}, f, indent=4)
+            json.dump({"ZGridRare": self.ZGrid_displayed, "avs": [list(arr) for arr in self.Averages[:4]]}, f, indent=4)
 
         with open(f"{averagesfolder}/avsR.json", "w") as f:
-            json.dump({"ZGridRare": self.ZGrid_displayed, "avs": self.Averages[4:]}, f, indent=4)
+            json.dump({"ZGridRare": self.ZGrid_displayed, "avs": [list(arr) for arr in self.Averages[4:]]}, f, indent=4)
 
     # The method that reads in a lazy way the binary data  line by line an evaluates
     # for each line the average probabilities
