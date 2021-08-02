@@ -29,13 +29,18 @@ help_periodN_x = "Specifies a step (or increment) of the visualised indices alon
 
 help_periodN_z = "Same as --periodN_x, but along z axis."
 
+help_noplots = "If it is set, it guides the script to omit the stage of loading the whole binaries"\
+               "to the RAM and, hence, omit drawing two-dimensional plots. Instead, only the averages probabilities"\
+               "will be evaulated, in a 'lazy' way, i.e. the script reads binaries line-by-line, saving just the average"\
+               "values."
+
 if __name__ == "__main__":
     # A little bit of parsing command line arguments, including auto generated help page
     parser = argparse.ArgumentParser(description="Loads binary data, makes the plots and saves additional numerical data.")
     parser.add_argument("--dir", help=help_dir)
     parser.add_argument("--periodN_x", default=1, help=help_periodN_x, type=int)
     parser.add_argument("--periodN_z", default=1, help=help_periodN_z, type=int)
-    parser.add_argument("--noplots", action='store_true')
+    parser.add_argument("--noplots", action='store_true', help=help_noplots)
     args = parser.parse_args()
     
     # The arguments themselves
