@@ -1,13 +1,10 @@
 #!/usr/bin/env python3
 
-from Data import Data
-
 import numpy as np
-import os, sys, json
+import os, sys, json, argparse
 
-from Modules import FourPlots1D, OnePlot2D_PNG, OnePlot2D_EPS, Grids, ObtainParameters, Symm, Averages
-
-import argparse
+from Data import Data
+from Modules import FourPlots1D, OnePlot2D_EPS
 
 # The labels that are connected to the solution curves and 2d-plots
 legendlabels = [r"$\nu_e$", r"$\nu_x$", r"$\bar{\nu}_e$", r"$\bar{\nu}_x$"]
@@ -38,22 +35,40 @@ if __name__ == "__main__":
     parser.add_argument("--dir", help=help_dir)
     parser.add_argument("--periodN_x", default=1, help=help_periodN_x, type=int)
     parser.add_argument("--periodN_z", default=1, help=help_periodN_z, type=int)
+    parser.add_argument("--noplots", action='store_true')
     args = parser.parse_args()
-
+    
     # The arguments themselves
-    dir = args.dir
+    dir       = args.dir
     periodN_x = args.periodN_x
     periodN_z = args.periodN_z
+    noplots   = args.noplots
 
-    # Load binaries
+    # The main object that handles the files put in the setup folder
     data = Data(folder=dir, periodN_x=periodN_x, periodN_z=periodN_z)
-    data.LoadBin()
 
-    """ Draw the plots"""
+    """ Section: draw the plots """
 
-    # Make a directory of plots if it doesn't exist
-    if not os.path.isdir(f"{dir}/plots"): os.mkdir(f"{dir}/plots")
-    # The filenames of plots to be generated; all of them here are in the encapsulated postscript (eps)
-    filenames = [f"{each}L.eps" for each in filelabels] + [f"{each}R.eps" for each in filelabels]
-    for i in range(8):
-        OnePlot2D_EPS(data.XGrid_displayed, data.ZGrid_displayed, data[i], f"{dir}/plots/{filenames[i]}")
+    if not noplots:
+        # Firsly, let's load the binaries
+        data.LoadBin()
+        # Make a directory of plots if it doesn't exist
+        if not os.path.isdir(f"{dir}/plots"): os.mkdir(f"{dir}/plots")
+        # The filenames of plots to be generated; all of them here are in the encapsulated postscript (eps)
+        filenames = [f"{each}L.eps" for each in filelabels] + [f"{each}R.eps" for each in filelabels]
+        for i in range(8):
+            OnePlot2D_EPS(data.XGrid_displayed, data.ZGrid_displayed, data.Probabilities[i], f"{dir}/plots/{filenames[i]}")
+
+    """ Section: cook the average probabilities, save them and plot """
+
+    # Firsly, let's obtain these average values; and in case we haven't loaded the binaries
+    # let's use 'lazy' generator
+    if noplots: data.LazyEvaluateAverages()
+    else:       data.EvaluateAverages()
+
+    # Then, let's dump these values
+    data.DumpAverages()
+    # And finally, make the plots
+    FourPlots1D(data.ZGrid_displayed, data.Averages[:4], f"{dir}/plots/avsL.eps", legendlabels)
+    FourPlots1D(data.ZGrid_displayed, data.Averages[4:], f"{dir}/plots/avsR.eps", legendlabels)
+    

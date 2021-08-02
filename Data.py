@@ -33,12 +33,12 @@ class Data:
             raise FileNotFoundError(f"No 'ZGrid.txt' file found at {self.folder}")
 
         # Main buffer containing the probabilities from the binary files
-        self.Probabilities = [[] for i in range(8)]
+        self._Probabilities = [[] for i in range(8)]
         self.loadedBin = False
 
         # Buffer containing (evaluated) average probabilities
-        self.Averages = [None for i in range(8)]
-        self.evaluatedAverages = False
+        self._Averages = [None for i in range(8)]
+        self.loadedAverages = False
 
         # First step is to obtain the dimensions of the saved grids
         # and the particular poiints at the axes
@@ -83,26 +83,37 @@ class Data:
         self.ZGrid_displayed = self.ZGrid[::self.periodN_z]
 
     # Access to the solution grids of probabilities
-    def __getitem__(self, i):
-        return self.Probabilities[i]
+    @property
+    def Probabilities(self):
+        if not self.loadedBin:
+            raise RuntimeError(f"The binary data haven't been loaded yet at {str(self)}.")
+        else:
+            return self._Probabilities
 
-    # Load the data contained in the binaries left.bin and right.bin
-    def LoadBin(self):
+    @property
+    def Averages(self):
+        if not self.loadedAverages:
+            raise RuntimeError(f"The averages haven't been loaded yet at {str(self)}.")
+        else:
+            return self._Averages
+
+    # Same special function that actually is a generator
+    # yielding the lines of solution one-by-one
+    def lines(self):
         # Here we are going to directly save only the needed entries from the binaries
         fl = open(f"{self.folder}/bin/left.bin", "rb")
         fr = open(f"{self.folder}/bin/right.bin", "rb")
-
-        # Firsly, let's initialize the empty matrices
-        for i in range(8):
-            self.Probabilities[i] = np.empty((self.N_z_displayed, self.N_x_displayed), np.float64)
 
         # Offset from the beginning of each file where the desired entries are saved
         def offset(iz_displayed, ix_displayed):
             return ((iz_displayed*self.periodN_z)*self.Length_x_bin + ix_displayed*self.periodN_x)*4*SIZE_FLOAT
 
         # And then let's pick out exactly the desired values
-        for iz in range(self.N_z_displayed):
-            for ix in range(self.N_x_displayed):
+        for iz in range(self.Length_z_displayed):
+            line = [np.empty(self.Length_x_displayed, np.float64) for i in range(8)]
+
+            # Evaluate the elements of the line
+            for ix in range(self.Length_x_displayed):
                 # Move to the needed entry
                 fl.seek(offset(iz, ix))
                 fr.seek(offset(iz, ix))
@@ -113,32 +124,37 @@ class Data:
                 probs = probsl + probsr
                 # And finally, let's save them in the matrices
                 for i in range(8):
-                    self.Probabilities[i][iz,ix] = probs[i]
+                    line[i][ix] = probs[i]
+
+            # Finally, return this part of the solution
+            yield line
         
         fl.close()
         fr.close()
+
+    # Load the data contained in the binaries left.bin and right.bin
+    def LoadBin(self):
+        # Firsly, let's initialize the empty matrices
+        for i in range(8):
+            self._Probabilities[i] = np.empty((self.Length_z_displayed, self.Length_x_displayed), np.float64)
+
+        # Let's use the generator for reading the binaries line by line
+        for iline, line in enumerate(self.lines()):
+            for i in range(8):
+                self._Probabilities[i][iline] = line[i]
 
         # Toggle the flag that the binaries are loaded at this instance
         self.loadedBin = True
 
     # Evaluate the average probabilities (dependent on the z coordinate)
     def EvaluateAverages(self):
-        # Check whether the binary data have already been read
-        if not self.loadedBin:
-            raise RuntimeError(f"The binary data haven't been read yet")
-
         # Evaluate the averages
-        self.Averages = [[sum(line)/len(line) for line in sol] for sol in self.Probabilities]
-
+        self._Averages = [[sum(line)/len(line) for line in sol] for sol in self.Probabilities]
         # And toggle the flag that the average probabilities have been evaluated
-        self.evaluatedAverages = True
+        self.loadedAverages = True
 
     # Dump the average probabilities into a folder
     def DumpAverages(self):
-        # Check whether the binary data have already been read
-        if not self.evaluatedAverages:
-            raise RuntimeError(f"The average probabilities haven't evaluated yet")
-
         # If the folder doesn't yet exists, make it
         averagesfolder = f"{self.folder}/averages"
         if not os.path.isdir(averagesfolder):
@@ -147,10 +163,10 @@ class Data:
         # Then search for the files with the average probabilities
         # and warn that the following will rewrite the average data
         if os.path.isfile(f"{averagesfolder}/avsL.json"):
-            warnings.warn(f"File {averagesfolder}/avsL.json has been found; it's going to be rewritten", RuntimeWarning)
+            warnings.warn(f"File {averagesfolder}/avsL.json has been found; it's going to be re-written", RuntimeWarning)
         
         if os.path.isfile(f"{averagesfolder}/avsR.json"):
-            warnings.warn(f"File {averagesfolder}/avsR.json has been found; it's going to be rewritten", RuntimeWarning)
+            warnings.warn(f"File {averagesfolder}/avsR.json has been found; it's going to be re-written", RuntimeWarning)
 
         # Save them in the JSON files
         with open(f"{averagesfolder}/avsL.json", "w") as f:
@@ -159,12 +175,26 @@ class Data:
         with open(f"{averagesfolder}/avsR.json", "w") as f:
             json.dump({"ZGridRare": self.ZGrid_displayed, "avs": self.Averages[4:]}, f, indent=4)
 
-    # Just load the average probabilitites without their evaluating
-    @staticmethod
-    def LoadAverages(folder):
-        pass
+    # The method that reads in a lazy way the binary data  line by line an evaluates
+    # for each line the average probabilities
+    def LazyEvaluateAverages(self):
+        # Allocate the empty matrices
+        self._Averages = [np.empty(self.Length_z_displayed, np.float64) for i in range(8)]
+
+        # Read the lines and save the average probabilities
+        for iline, line in enumerate(self.lines()):
+            for i in range(8):
+                self._Averages[i][iline] = sum(line[i]) / len(line[i])
+
+        # And toggle flag that now we possess the averages probabilities
+        self.loadedAverages = True
 
 if __name__ == "__main__":
-    data = Data("build/Data/NSSI NLM Mon Jul  5 13:24:48 2021", periodN_x=10)
-    data.LoadBin()
-    data.DumpAverages()
+    data = Data("build/Data/NSSI NLM Mon Aug  2 14:18:26 2021/", periodN_x=1)
+    #data.EvaluateAverages()
+    #data.LoadBin()
+    #print(data.Probabilities[0])
+    #data.DumpAverages()
+    #print(data[0])
+    data.LazyEvaluateAverages()
+    print(data.Averages[0])

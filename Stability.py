@@ -229,8 +229,8 @@ def MyFancyArrayToString(nparray, permutate=True):
 def LMatrixOffdiagonal_Direct(setup):
     # First, let's evaluate some additional constants
     delta = -setup.q*setup.tan
-    alphaPlus  = delta + setup.eta/setup.cos
-    alphaMinus = delta - setup.eta/setup.cos
+    OmegaPlus  = delta + setup.eta/setup.cos
+    OmegaMinus = delta - setup.eta/setup.cos
     mub = setup.mu / setup.cos
     gPlus = setup.gPlus
 
@@ -243,15 +243,15 @@ def LMatrixOffdiagonal_Direct(setup):
     Diag  = mub*(De + Dx)
 
     # Then, let's define the blocks 4x4
-    L_A = np.array([[ alphaMinus+3.0*Diag, 0.0,                   Offex,              -Offex              ],
-                    [ 0.0,                 alphaPlus+3.0*Diag,   -Offxe,               Offxe              ],
-                    [-Offxe,               Offxe,                -alphaPlus-3.0*Diag, 0.0                 ],
-                    [ Offex,              -Offex,                 0.0,                -alphaMinus-3.0*Diag]])
+    L_A = np.array([[ OmegaMinus+3.0*Diag, 0.0,                   Offex,              -Offex              ],
+                    [ 0.0,                 OmegaPlus+3.0*Diag,   -Offxe,               Offxe              ],
+                    [-Offxe,               Offxe,                -OmegaPlus-3.0*Diag, 0.0                 ],
+                    [ Offex,              -Offex,                 0.0,                -OmegaMinus-3.0*Diag]])
 
-    L_B = np.array([[ alphaMinus-3.0*Diag, 0.0,                  -Offxe,               Offxe              ],
-                    [ 0.0,                 alphaPlus-3.0*Diag,   Offex,               -Offex              ],
-                    [ Offex,              -Offex,                -alphaPlus+3.0*Diag,  0.0                ],
-                    [-Offxe,               Offxe,                 0.0,                -alphaMinus+3.0*Diag]])
+    L_B = np.array([[ OmegaMinus-3.0*Diag, 0.0,                  -Offxe,               Offxe              ],
+                    [ 0.0,                 OmegaPlus-3.0*Diag,   Offex,               -Offex              ],
+                    [ Offex,              -Offex,                -OmegaPlus+3.0*Diag,  0.0                ],
+                    [-Offxe,               Offxe,                 0.0,                -OmegaMinus+3.0*Diag]])
 
     L_C = np.diag([ delta + 2.0*mub*(2.0*De + Dx),
                     delta + 2.0*mub*(De + 2.0*Dx),
